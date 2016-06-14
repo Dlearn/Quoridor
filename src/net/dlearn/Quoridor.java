@@ -102,30 +102,57 @@ public class Quoridor extends JFrame {
         			// Player movement logic - If not adding a wall then check if mouse click is valid
     				else if (rowSelected >= 0 && rowSelected < ROWS && colSelected >= 0 && colSelected < COLS)
         			{
-        				// Which player is it? 
-        				if (currentPlayer == Player.RED)
+        				// Which player is it?
+    					boolean clashWithRed = rowSelected == redY && colSelected == redX;
+    					boolean clashWithBlu = rowSelected == bluY && colSelected == bluX;
+    					//Is this a valid move for RED?
+    					if (currentPlayer == Player.RED && !clashWithBlu)
         				{
-        					// Is this a valid move for RED?
-        					if (rowSelected == redY  && (colSelected == redX - 1 || colSelected == redX + 1))
+        					if (rowSelected == redY)
         					{
-        						redX = colSelected;
-        						updateGame(); // update state & change active player
-        					} else if (colSelected == redX  && (rowSelected == redY - 1 || rowSelected == redY + 1))
+        						int validX = Integer.MAX_VALUE;
+        						if (bluX - redX == 1) validX = bluX + 1;
+        						else if (redX - bluX == 1) validX = bluX - 1;
+        						if (colSelected == redX - 1 || colSelected == redX + 1 || colSelected == validX)
+        						{
+        							redX = colSelected;
+        							updateGame(); // update state & change active player
+        						}
+        					} else if (colSelected == redX)
         					{
-        						redY = rowSelected;
-        						updateGame(); // update state & change active player
+        						int validY = Integer.MAX_VALUE;
+        						if (bluY - redY == 1) validY = bluY + 1;
+        						else if (redY - bluY == 1) validY = bluY - 1;
+        						if (rowSelected == redY - 1 || rowSelected == redY + 1 || rowSelected == validY)
+        						{
+        							redY = rowSelected;
+        							updateGame(); // update state & change active player
+        						}
         					}
-        				} else // currentPlayer == Player.BLU
+        				} 
+    					// Is this a valid move for BLU?
+    					else if (currentPlayer == Player.BLU && !clashWithRed)
         				{
-        					// Is this a valid move for BLU?
-        					if (rowSelected == bluY  && (colSelected == bluX - 1 || colSelected == bluX + 1))
+        					if (rowSelected == bluY)
         					{
-        						bluX = colSelected;
-        						updateGame(); // update state & change active player
-        					} else if (colSelected == bluX  && (rowSelected == bluY - 1 || rowSelected == bluY + 1))
-        					{	
-        						bluY = rowSelected;
-        						updateGame(); // update state & change active player
+        						int validX = Integer.MAX_VALUE;
+        						if (bluX - redX == 1) validX = redX - 1;
+        						else if (redX - bluX == 1) validX = redX + 1;
+        						if (colSelected == bluX - 1 || colSelected == bluX + 1 || colSelected == validX)
+        						{
+        							bluX = colSelected;
+        							updateGame(); // update state & change active player
+        						}
+        					} else if (colSelected == bluX )
+        					{
+        						int validY = Integer.MAX_VALUE;
+        						if (bluY - redY == 1) validY = redY - 1;
+        						else if (redY - bluY == 1) validY = redY + 1;
+        						if (rowSelected == bluY - 1 || rowSelected == bluY + 1 || rowSelected == validY)
+        						{
+        							bluY = rowSelected;
+        							updateGame(); // update state & change active player
+        						}
         					}
         				}
         			}
