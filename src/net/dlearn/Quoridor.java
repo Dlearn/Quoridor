@@ -17,7 +17,7 @@ public class Quoridor extends JFrame {
     public static final int CANVAS_WIDTH = CELL_SIZE * COLS;  // the drawing canvas
     public static final int CANVAS_HEIGHT = CELL_SIZE * ROWS;
     public static final int GRID_WIDTH = 3;                   // Grid-line's width
-    public static final int GRID_WIDHT_HALF = GRID_WIDTH / 2; // Grid-line's half-width
+    public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2; // Grid-line's half-width
     // Players (circles) are displayed inside a cell, with padding from border
     public static final int CELL_PADDING = CELL_SIZE / 6;
     public static final int SYMBOL_SIZE = CELL_SIZE - CELL_PADDING * 2; // width/height
@@ -48,6 +48,18 @@ public class Quoridor extends JFrame {
         canvas = new DrawCanvas();  // Construct a drawing canvas (a JPanel)
         canvas.setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT));
  
+        /*
+        // The canvas (JPanel fires a MouseEvent upon mouse-enter
+        canvas.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		int mouseX = e.getX();
+        		int mouseY = e.getY();
+        		System.out.println(mouseX + ", " + mouseY);
+        	}
+        });
+        */
+        
         // The canvas (JPanel) fires a MouseEvent upon mouse-click
         canvas.addMouseListener(new MouseAdapter() {
         	@Override
@@ -61,8 +73,34 @@ public class Quoridor extends JFrame {
         		// If playing, check whether the mouse click if valid
         		if (currentState == GameState.PLAYING) 
         		{
-        			// Check if mouse click is valid
-        			if (rowSelected >= 0 && rowSelected < ROWS && colSelected >= 0 && colSelected < COLS)
+        			// Wall add logic - Check that you're clicking on a horizontal wall
+    				int remainderX = mouseX % CELL_SIZE;
+    				int remainderY = mouseY % CELL_SIZE;
+    				
+    				if (remainderY <= WALL_PADDING) 
+    				{
+    					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, true, currentPlayer);
+    					else addWall(colSelected, rowSelected-1, true, currentPlayer);
+    				}
+    				else if (remainderY >= CELL_SIZE - WALL_PADDING)
+    				{
+    					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected, true, currentPlayer);
+    					else addWall(colSelected, rowSelected, true, currentPlayer);
+    				}
+    				// Check that you're clicking on a vertical wall
+    				else if (remainderX <= WALL_PADDING)
+    				{
+    					if (remainderY <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, false, currentPlayer);
+    					else addWall(colSelected-1, rowSelected, false, currentPlayer);
+    				}
+    				else if (remainderX >= CELL_SIZE - WALL_PADDING)
+    				{
+    					if (remainderY <= CELL_SIZE / 2) addWall(colSelected, rowSelected-1, false, currentPlayer);
+    					else addWall(colSelected, rowSelected, false, currentPlayer);
+    				}
+        			
+        			// Player movement logic - If not adding a wall then check if mouse click is valid
+    				else if (rowSelected >= 0 && rowSelected < ROWS && colSelected >= 0 && colSelected < COLS)
         			{
         				// Which player is it? 
         				if (currentPlayer == Player.RED)
@@ -92,12 +130,10 @@ public class Quoridor extends JFrame {
         				}
         			}
         		}
-            
-        		else {       // game over
+        		else { // currentState != GameState.PLAYING: Game Over
         			initGame(); // restart the game
         		}
-        		// Refresh the drawing canvas
-        		repaint();  // Call-back paintComponent().
+        		repaint();  // Call-back paintComponent()
         	}
         });
  
@@ -131,14 +167,10 @@ public class Quoridor extends JFrame {
         		verticalWalls[col][row] = Player.EMPTY;
         	}
         }
-        // Start by creating a horizontal wall on top left hand corner 
-        horizontalWalls[0][0] = Player.RED;
-        horizontalWalls[2][0] = Player.BLU;
         
-        redX = 4;
-	    redY = ROWS - 1;
-	    bluX = 4;
-	    bluY = 0;
+        // Initialize player starting positions
+        redX = 4; redY = ROWS - 1;
+	    bluX = 4; bluY = 0;
         currentState = GameState.PLAYING; // ready to play
         currentPlayer = Player.RED;       // cross plays first
     }
@@ -149,10 +181,55 @@ public class Quoridor extends JFrame {
 	    else if (bluY == ROWS - 1) currentState = GameState.BLU_WON;
 	    else currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
     }
+    
+    private boolean addWall(int col, int row, boolean isHorizontal, Player color) {
+    	System.out.println("Trying to add at (col,row): "+col+", "+row);
+    	
+    	assert(color == Player.RED || color == Player.BLU);
+    	// if horizontalWalls[col][row] == Player.RED / BLU
+    	boolean clashesHorizontally = horizontalWalls[col][row] != Player.EMPTY;
+    	//System.out.println("clashesHorizontally: "+clashesHorizontally);
+    	// if verticalWalls[col][row] == Player.RED / BLU
+    	boolean clashesVertically = verticalWalls[col][row] != Player.EMPTY;
+    	//System.out.println("clashesVertically: "+clashesVertically);
+    	
+    	boolean clashesBack, clashesForward;
+    	if (isHorizontal) // if isHorizontal check left and right (same row different col)
+    	{
+    		if (col != 0) clashesBack = horizontalWalls[col-1][row] != Player.EMPTY;
+    		else clashesBack = false;
+    		//System.out.println("clashesBack: "+clashesBack);
+    		if (col != COLS-1) clashesForward = horizontalWalls[col+1][row] != Player.EMPTY;
+    		else clashesForward = false;
+    		//System.out.println("clashesForward: "+clashesForward);
+    	} else // if !isHorizontal check up and down (same col different row)
+    	{
+    		if (row != 0) clashesBack = verticalWalls[col][row-1] != Player.EMPTY;
+    		else clashesBack = false;
+    		//System.out.println("clashesBack: "+clashesBack);
+    		if (row != ROWS-1) clashesForward = verticalWalls[col][row+1] != Player.EMPTY;
+    		else clashesForward = false;
+    		//System.out.println("clashesForward: "+clashesForward);
+    	}
+    	
+    	boolean clashes = clashesHorizontally || clashesVertically || clashesBack || clashesForward;
+    	if (clashes) return false;
+    	else 
+    	{
+    		if (isHorizontal)
+    		{
+    			horizontalWalls[col][row] = color;
+    		} else
+    		{
+    			verticalWalls[col][row] = color;
+    		}
+    		//System.out.println("Sucessfully added wall at: "+row+","+col);
+    		currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
+    		return true;
+    	}
+    }
  
-    /**
-     *  Inner class DrawCanvas (extends JPanel) used for custom graphics drawing.
-     */
+    // Inner class DrawCanvas (extends JPanel) used for custom graphics drawing.
     class DrawCanvas extends JPanel {
         @Override
         public void paintComponent(Graphics g) {  // invoke via repaint()
@@ -161,19 +238,12 @@ public class Quoridor extends JFrame {
  
             // Draw the grid-lines
             g.setColor(Color.LIGHT_GRAY);
-            for (int row = 1; row < ROWS; ++row) 
-            {
-                g.fillRoundRect(0, CELL_SIZE * row - GRID_WIDHT_HALF, CANVAS_WIDTH-1, GRID_WIDTH, GRID_WIDTH, GRID_WIDTH);
-            }
-            for (int col = 1; col < COLS; ++col) 
-            {
-            	g.fillRoundRect(CELL_SIZE * col - GRID_WIDHT_HALF, 0, GRID_WIDTH, CANVAS_HEIGHT-1, GRID_WIDTH, GRID_WIDTH);
-            }
+            for (int row = 1; row < ROWS; ++row) g.fillRoundRect(0, CELL_SIZE * row - GRID_WIDTH_HALF, CANVAS_WIDTH-1, GRID_WIDTH, GRID_WIDTH, GRID_WIDTH);
+            for (int col = 1; col < COLS; ++col) g.fillRoundRect(CELL_SIZE * col - GRID_WIDTH_HALF, 0, GRID_WIDTH, CANVAS_HEIGHT-1, GRID_WIDTH, GRID_WIDTH);
  
             // Draw the player tokens
             Graphics2D g2d = (Graphics2D)g;
-            g2d.setStroke(new BasicStroke(SYMBOL_STROKE_WIDTH, BasicStroke.CAP_ROUND,
-            		BasicStroke.JOIN_ROUND));  // Graphics2D only - for player symbols
+            g2d.setStroke(new BasicStroke(SYMBOL_STROKE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));  // Graphics2D only - for player symbols
             int xPrint, yPrint;
             xPrint = redX * CELL_SIZE + CELL_PADDING;
             yPrint = redY * CELL_SIZE + CELL_PADDING;
@@ -186,8 +256,7 @@ public class Quoridor extends JFrame {
             g2d.drawOval(xPrint, yPrint, SYMBOL_SIZE, SYMBOL_SIZE);
          
             // Draw the walls
-            g2d.setStroke(new BasicStroke(WALL_STROKE_WIDTH, BasicStroke.CAP_ROUND,
-            		BasicStroke.JOIN_ROUND));  // Graphics2D only - for wall drawing
+            g2d.setStroke(new BasicStroke(WALL_STROKE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));  // Graphics2D only - for wall drawing
             for (int col = 0; col < COLS-1; col++) 
             {
             	for (int row = 0; row < ROWS-1; row++)
@@ -209,6 +278,21 @@ public class Quoridor extends JFrame {
                         g2d.drawLine(x1, y, x2, y);
             		}
             		// VERTICAL WALLS
+            		if (verticalWalls[col][row] == Player.RED)
+            		{
+            			int x = (col + 1) * CELL_SIZE;
+            			int y1 = row * CELL_SIZE + WALL_PADDING;
+            			int y2 = (row + 2) * CELL_SIZE - WALL_PADDING;
+            			g2d.setColor(Color.RED);
+                        g2d.drawLine(x, y1, x, y2);            			
+            		} else if (verticalWalls[col][row] == Player.BLU)
+            		{
+            			int x = (col + 1) * CELL_SIZE;
+            			int y1 = row * CELL_SIZE + WALL_PADDING;
+            			int y2 = (row + 2) * CELL_SIZE - WALL_PADDING;
+            			g2d.setColor(Color.BLUE);
+                        g2d.drawLine(x, y1, x, y2);
+            		}
             	}
             }
             
@@ -230,7 +314,7 @@ public class Quoridor extends JFrame {
             }
         }
     }
- 
+    
     /** The entry main() method */
     public static void main(String[] args) {
         // Run GUI codes in the Event-Dispatching thread for thread safety
