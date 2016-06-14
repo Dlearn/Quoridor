@@ -1,7 +1,10 @@
 package net.dlearn;
 
 import java.awt.*;
+import java.awt.List;
 import java.awt.event.*;
+import java.util.*;
+
 import javax.swing.*;
 /**
  * Quoridor: Two-player Graphics version with Simple-OO
@@ -123,6 +126,8 @@ public class Quoridor extends JFrame {
         						int validY = Integer.MAX_VALUE;
         						if (bluY - redY == 1) validY = bluY + 1;
         						else if (redY - bluY == 1) validY = bluY - 1;
+        						
+        						boolean walled;
         						if (rowSelected == redY - 1 || rowSelected == redY + 1 || rowSelected == validY)
         						{
         							redY = rowSelected;
@@ -131,9 +136,89 @@ public class Quoridor extends JFrame {
         					}
         				} 
     					// Is this a valid move for BLU?
-    					else if (currentPlayer == Player.BLU && !clashWithRed)
+    					//else if (currentPlayer == Player.BLU && !clashWithRed)
+    					else // currentPlayer == Player.BLU
         				{
-        					if (rowSelected == bluY)
+    						LinkedList<Integer> validCoords = new LinkedList<Integer>();
+    						if (bluX >= 1) 
+    						{
+    							// Check that opponent not on this square
+    							if (redX != bluX - 1 || redY != bluY)
+    							{
+    								validCoords.add(bluX - 1);
+    								validCoords.add(bluY);
+    							}
+    							else // can jump
+    							{
+    								// if you can jump, jump
+    								// to check if I can jump, need to check presence of 2 walls
+    								if (bluX >= 2)
+    								{
+    									validCoords.add(bluX - 2);
+        								validCoords.add(bluY);
+    								}
+    							}
+    							// Check that there's no wall
+    						}
+    						if (bluX <= COLS - 1)
+    						{
+    							if (redX != bluX + 1 || redY != bluY)
+    							{
+    								validCoords.add(bluX + 1);
+    								validCoords.add(bluY);
+    							}
+    							else
+    							{
+    								if (bluX <= COLS - 2)
+    								{
+    									validCoords.add(bluX + 2);
+        								validCoords.add(bluY);
+    								}
+    							}
+    						}
+    						if (bluY >= 1)
+    						{
+    							if (redX != bluX || redY != bluY - 1)
+    							{
+    								validCoords.add(bluX);
+    								validCoords.add(bluY - 1);
+    							}
+    							else
+    							{
+    								if (bluY >= 2)
+    								{
+    									validCoords.add(bluX);
+        								validCoords.add(bluY - 2);
+    								}
+    							}
+    						}
+    						if (bluY <= ROWS - 1)
+    						{
+    							if (redX != bluX || redY != bluY + 1)
+    							{
+    								validCoords.add(bluX);
+    								validCoords.add(bluY + 1);
+    							}
+    							else
+    							{
+    								if (bluY <= ROWS - 2)
+    								{
+    									validCoords.add(bluX);
+        								validCoords.add(bluY + 2);
+    								}
+    							}
+    						}
+    						ListIterator<Integer> litr = validCoords.listIterator();
+    						while(litr.hasNext()){
+    				            if (colSelected == litr.next() && rowSelected == litr.next()) 
+    				            {
+    				            	bluX = colSelected;
+    				            	bluY = rowSelected;
+    				            	updateGame();	
+    				            }
+    				        }
+    						/*
+    						if (rowSelected == bluY)
         					{
         						int validX = Integer.MAX_VALUE;
         						if (bluX - redX == 1) validX = redX - 1;
@@ -154,6 +239,7 @@ public class Quoridor extends JFrame {
         							updateGame(); // update state & change active player
         						}
         					}
+        					*/
         				}
         			}
         		}
