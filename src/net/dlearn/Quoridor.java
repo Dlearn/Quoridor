@@ -81,8 +81,8 @@ public class Quoridor extends JFrame {
         			// Wall add logic - Check that you're clicking on a horizontal wall
     				int remainderX = mouseX % CELL_SIZE;
     				int remainderY = mouseY % CELL_SIZE;
+    				//System.out.println("remainderX: " + remainderX + ", remainderY:" + remainderY);
     				
-    				// BUG: cannot create wall when clicking on edges near the border.
     				if (remainderY <= WALL_PADDING) 
     				{
     					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.HORIZONTAL, currentPlayer);
@@ -182,7 +182,11 @@ public class Quoridor extends JFrame {
     }
  
     private boolean addWall(int col, int row, Direction inDirection, Player inColor) {
-    	//System.out.println("Trying to add at (col,row): "+col+", "+row);
+    	//Hack to clamp the wall addition
+    	if (col == -1) col = 0;
+    	else if (col == COLS-1) col = COLS-2;
+    	if (row == -1) row = 0;
+    	else if (row == ROWS-1) row = ROWS-2;
     	
     	if (inColor == Player.EMPTY) throw new AssertionError();
     	// if horizontalWalls[col][row] == Player.RED / BLU
