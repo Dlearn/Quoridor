@@ -33,6 +33,7 @@ public class Quoridor extends JFrame {
     private enum UDLR { UP, DOWN, LEFT, RIGHT };
     public static Player[][] horizontalWalls;
     public static Player[][] verticalWalls;
+    LinkedList<Integer> validMovementCoords;
     private Player currentPlayer;  // the current player
     
     public static int redX;
@@ -81,6 +82,7 @@ public class Quoridor extends JFrame {
     				int remainderX = mouseX % CELL_SIZE;
     				int remainderY = mouseY % CELL_SIZE;
     				
+    				// BUG: cannot create wall when clicking on edges near the border.
     				if (remainderY <= WALL_PADDING) 
     				{
     					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.HORIZONTAL, currentPlayer);
@@ -106,155 +108,31 @@ public class Quoridor extends JFrame {
         			// Player movement logic - If not adding a wall then check if mouse click is valid
     				else if (rowSelected >= 0 && rowSelected < ROWS && colSelected >= 0 && colSelected < COLS)
         			{
-        				// Which player is it?
-    					boolean clashWithRed = rowSelected == redY && colSelected == redX;
-    					boolean clashWithBlu = rowSelected == bluY && colSelected == bluX;
-    					//Is this a valid move for RED?
-    					if (currentPlayer == Player.RED && !clashWithBlu)
-        				{
-        					if (rowSelected == redY)
-        					{
-        						int validX = Integer.MAX_VALUE;
-        						if (bluX - redX == 1) validX = bluX + 1;
-        						else if (redX - bluX == 1) validX = bluX - 1;
-        						if (colSelected == redX - 1 || colSelected == redX + 1 || colSelected == validX)
-        						{
-        							redX = colSelected;
-        							updateGame(); // update state & change active player
-        						}
-        					} else if (colSelected == redX)
-        					{
-        						int validY = Integer.MAX_VALUE;
-        						if (bluY - redY == 1) validY = bluY + 1;
-        						else if (redY - bluY == 1) validY = bluY - 1;
-        						
-        						if (rowSelected == redY - 1 || rowSelected == redY + 1 || rowSelected == validY)
-        						{
-        							redY = rowSelected;
-        							updateGame(); // update state & change active player
-        						}
-        					}
-        				} 
-    					// Is this a valid move for BLU?
-    					//else if (currentPlayer == Player.BLU && !clashWithRed)
-    					else // currentPlayer == Player.BLU
-        				{
-    						LinkedList<Integer> validCoords = new LinkedList<Integer>();
-    						boolean isBlockedByWall;
-    						boolean isNextToOpponent;
-    						if (bluX >= 1)  // Move left
+    					Object[] arrayedList = validMovementCoords.toArray();
+    					for(int i=0; i<arrayedList.length/2; i++)
+    					{
+    						int validX = (int) arrayedList[i*2];
+    						int validY = (int) arrayedList[i*2+1];
+    						if (colSelected == validX && rowSelected == validY)
     						{
-    							// Check that there's no wall
-    							if (bluY == 0) isBlockedByWall = verticalWalls[bluX-1][0] != Player.EMPTY;
-    							else if (bluY == ROWS) isBlockedByWall = verticalWalls[bluX-1][ROWS-1] != Player.EMPTY;
-    							
-    							isNextToOpponent = redX == bluX - 1 && redY == bluY; 
-    							if (!isNextToOpponent)
+    							if (currentPlayer == Player.RED)
     							{
-    								validCoords.add(bluX - 1);
-    								validCoords.add(bluY);
+    								redX = colSelected;
+    								redY = rowSelected;
     							}
-    							else // can jump
+    							else // currentPlayer == Player.BLU
     							{
-    								// if you can jump, jump
-    								// to check if I can jump, need to check presence of 2 walls
-    								if (bluX >= 2)
-    								{
-    									validCoords.add(bluX - 2);
-        								validCoords.add(bluY);
-    								}
+    								bluX = colSelected;
+    								bluY = rowSelected;
     							}
+    							updateGame();
     						}
-    						if (bluX <= COLS - 1) // Move right
-    						{
-    							isNextToOpponent = redX == bluX + 1 && redY == bluY;
-    							if (!isNextToOpponent)
-    							{
-    								validCoords.add(bluX + 1);
-    								validCoords.add(bluY);
-    							}
-    							else
-    							{
-    								if (bluX <= COLS - 2)
-    								{
-    									validCoords.add(bluX + 2);
-        								validCoords.add(bluY);
-    								}
-    							}
-    						}
-    						if (bluY >= 1) // Move up
-    						{
-    							isNextToOpponent = redX == bluX && redY == bluY - 1;
-    							if (!isNextToOpponent)
-    							{
-    								validCoords.add(bluX);
-    								validCoords.add(bluY - 1);
-    							}
-    							else
-    							{
-    								if (bluY >= 2)
-    								{
-    									validCoords.add(bluX);
-        								validCoords.add(bluY - 2);
-    								}
-    							}
-    						}
-    						if (bluY <= ROWS - 1) // Move down
-    						{
-    							isNextToOpponent = redX == bluX && redY == bluY + 1; 
-    							if (!isNextToOpponent)
-    							{
-    								validCoords.add(bluX);
-    								validCoords.add(bluY + 1);
-    							}
-    							else
-    							{
-    								if (bluY <= ROWS - 2)
-    								{
-    									validCoords.add(bluX);
-        								validCoords.add(bluY + 2);
-    								}
-    							}
-    						}
-    						ListIterator<Integer> litr = validCoords.listIterator();
-    						while(litr.hasNext()){
-    				            if (colSelected == litr.next() && rowSelected == litr.next()) 
-    				            {
-    				            	bluX = colSelected;
-    				            	bluY = rowSelected;
-    				            	updateGame();	
-    				            }
-    				        }
-    						/*
-    						if (rowSelected == bluY)
-        					{
-        						int validX = Integer.MAX_VALUE;
-        						if (bluX - redX == 1) validX = redX - 1;
-        						else if (redX - bluX == 1) validX = redX + 1;
-        						if (colSelected == bluX - 1 || colSelected == bluX + 1 || colSelected == validX)
-        						{
-        							bluX = colSelected;
-        							updateGame(); // update state & change active player
-        						}
-        					} else if (colSelected == bluX )
-        					{
-        						int validY = Integer.MAX_VALUE;
-        						if (bluY - redY == 1) validY = redY - 1;
-        						else if (redY - bluY == 1) validY = redY + 1;
-        						if (rowSelected == bluY - 1 || rowSelected == bluY + 1 || rowSelected == validY)
-        						{
-        							bluY = rowSelected;
-        							updateGame(); // update state & change active player
-        						}
-        					}
-        					*/
-        				}
+    					}
         			}
         		}
         		else { // currentState != GameState.PLAYING: Game Over
         			initGame(); // restart the game
         		}
-        		repaint();  // Call-back paintComponent()
         	}
         });
  
@@ -280,6 +158,7 @@ public class Quoridor extends JFrame {
     public void initGame() {
         horizontalWalls = new Player[COLS-1][ROWS-1];
         verticalWalls = new Player[COLS-1][ROWS-1];
+        validMovementCoords = new LinkedList<Integer>();
         for (int col = 0; col < COLS-1; col++) 
         {
         	for (int row = 0; row < ROWS-1; row++)
@@ -289,24 +168,23 @@ public class Quoridor extends JFrame {
         	}
         }
         
+        // Test code for isNextToWall method
+        //addWall(0,0,Direction.VERTICAL,Player.RED);
+        //System.out.println(isNextToWall(1,2,UDLR.LEFT));
+        
         // Initialize player starting positions
         redX = 4; redY = ROWS - 1;
 	    bluX = 4; bluY = 0;
         currentState = GameState.PLAYING; // ready to play
-        currentPlayer = Player.RED;       // cross plays first
+        currentPlayer = Player.RED;       // red plays first
+        updateValidMovementCoords();
+        repaint();
     }
  
-    // Update the currentState 
-    public void updateGame() {
-	    if (redY == 0) currentState = GameState.RED_WON;
-	    else if (bluY == ROWS - 1) currentState = GameState.BLU_WON;
-	    else currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
-    }
-    
     private boolean addWall(int col, int row, Direction inDirection, Player inColor) {
-    	System.out.println("Trying to add at (col,row): "+col+", "+row);
+    	//System.out.println("Trying to add at (col,row): "+col+", "+row);
     	
-    	assert(inColor == Player.RED || inColor == Player.BLU);
+    	if (inColor == Player.EMPTY) throw new AssertionError();
     	// if horizontalWalls[col][row] == Player.RED / BLU
     	boolean clashesHorizontally = horizontalWalls[col][row] != Player.EMPTY;
     	//System.out.println("clashesHorizontally: "+clashesHorizontally);
@@ -344,18 +222,212 @@ public class Quoridor extends JFrame {
     		{
     			verticalWalls[col][row] = inColor;
     		}
-    		//System.out.println("Sucessfully added wall at: "+row+","+col);
-    		currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
+    		//System.out.println("Successfully added wall at: "+row+","+col);
+    		updateGame();
     		return true;
     	}
     }
     
+    // Update the currentState 
+    private void updateGame() {
+	    if (redY == 0) currentState = GameState.RED_WON;
+	    else if (bluY == ROWS - 1) currentState = GameState.BLU_WON;
+	    currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
+	    updateValidMovementCoords();
+	    repaint();  // Call-back paintComponent()
+    }
+    
+    private void updateValidMovementCoords()
+    {
+    	validMovementCoords.clear();
+    	int activeX, activeY;
+    	int inactiveX, inactiveY;
+    	if (currentPlayer == Player.RED) 
+    	{
+    		activeX = redX; 
+    		activeY = redY;
+    		inactiveX = bluX;
+    		inactiveY = bluY;
+    	}
+    	else // currentPlayer == Player.BLU 
+    	{
+    		activeX = bluX;
+    		activeY = bluY;
+    		inactiveX = redX;
+    		inactiveY = redY;
+    	}
+    	boolean isNextToOpponent;
+		if (activeX >= 1)  // Move left
+		{
+			if (!isNextToWall(activeX, activeY, UDLR.LEFT))
+			{
+				isNextToOpponent = inactiveX == activeX - 1 && inactiveY == activeY;
+				if (!isNextToOpponent)
+				{
+					validMovementCoords.add(activeX - 1);
+					validMovementCoords.add(activeY);
+				}
+				else // can jump
+				{
+					boolean opponentHasWallBehindHim = isNextToWall(inactiveX, inactiveY, UDLR.LEFT);
+					if (!opponentHasWallBehindHim)
+					{
+						validMovementCoords.add(activeX - 2);
+						validMovementCoords.add(activeY);
+					}
+					else
+					{
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.UP))
+						{
+							validMovementCoords.add(inactiveX);
+							validMovementCoords.add(inactiveY-1);
+						}
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.DOWN))
+						{
+							validMovementCoords.add(inactiveX);
+							validMovementCoords.add(inactiveY+1);
+						}
+					}
+				}
+			}
+		}
+		if (activeX <= COLS - 1) // Move right
+		{
+			if (!isNextToWall(activeX,activeY,UDLR.RIGHT))
+			{
+				isNextToOpponent = inactiveX == activeX + 1 && inactiveY == activeY;
+				if (!isNextToOpponent)
+				{
+					validMovementCoords.add(activeX + 1);
+					validMovementCoords.add(activeY);
+				}
+				else
+				{
+					boolean opponentHasWallBehindHim = isNextToWall(inactiveX, inactiveY, UDLR.RIGHT);
+					if (!opponentHasWallBehindHim)
+					{
+						validMovementCoords.add(activeX + 2);
+						validMovementCoords.add(activeY);
+					}
+					else
+					{
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.UP))
+						{
+							validMovementCoords.add(inactiveX);
+							validMovementCoords.add(inactiveY-1);
+						}
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.DOWN))
+						{
+							validMovementCoords.add(inactiveX);
+							validMovementCoords.add(inactiveY+1);
+						}
+					}
+				}
+			}
+		}
+		if (activeY >= 1) // Move up
+		{
+			if (!isNextToWall(activeX, activeY, UDLR.UP))
+			{
+				isNextToOpponent = inactiveX == activeX && inactiveY == activeY - 1;
+				if (!isNextToOpponent)
+				{
+					validMovementCoords.add(activeX);
+					validMovementCoords.add(activeY - 1);
+				}
+				else
+				{
+					boolean opponentHasWallBehindHim = isNextToWall(inactiveX, inactiveY, UDLR.UP);
+					if (!opponentHasWallBehindHim)
+					{
+						validMovementCoords.add(activeX);
+						validMovementCoords.add(activeY - 2);
+					}
+					else
+					{
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.LEFT))
+						{
+							validMovementCoords.add(inactiveX-1);
+							validMovementCoords.add(inactiveY);
+						}
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.RIGHT))
+						{
+							validMovementCoords.add(inactiveX+1);
+							validMovementCoords.add(inactiveY);
+						}
+					}
+				}
+			}
+		}
+		if (activeY <= ROWS - 1) // Move down
+		{
+			if (!isNextToWall(activeX, activeY, UDLR.DOWN))
+			{
+				isNextToOpponent = inactiveX == activeX && inactiveY == activeY + 1; 
+				if (!isNextToOpponent)
+				{
+					validMovementCoords.add(activeX);
+					validMovementCoords.add(activeY + 1);
+				}
+				else
+				{
+					boolean opponentHasWallBehindHim = isNextToWall(inactiveX, inactiveY, UDLR.DOWN);
+					if (!opponentHasWallBehindHim)
+					{
+						validMovementCoords.add(activeX);
+						validMovementCoords.add(activeY + 2);
+					}
+					else
+					{
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.LEFT))
+						{
+							validMovementCoords.add(inactiveX-1);
+							validMovementCoords.add(inactiveY);
+						}
+						if (!isNextToWall(inactiveX, inactiveY, UDLR.RIGHT))
+						{
+							validMovementCoords.add(inactiveX+1);
+							validMovementCoords.add(inactiveY);
+						}
+					}
+				}
+			}
+		}
+    }
+    
     private boolean isNextToWall (int inCol, int inRow, UDLR inUDLR)
     {
-    	// TODO... Checking code
-    	return true;
+    	if (inUDLR == UDLR.UP) 
+    	{
+    		//if (inRow == 0) throw new AssertionError();
+    		if (inRow == 0) return true;
+    		else if (inCol == 0) return horizontalWalls[0][inRow-1] != Player.EMPTY;
+    		else if (inCol == COLS-1) return horizontalWalls[COLS-2][inRow-1] != Player.EMPTY;
+    		else return horizontalWalls[inCol-1][inRow-1] != Player.EMPTY || horizontalWalls[inCol][inRow-1] != Player.EMPTY;
+    	}
+    	else if (inUDLR == UDLR.DOWN) 
+    	{
+    		if (inRow == ROWS-1) return true;
+    		else if (inCol == 0) return horizontalWalls[0][inRow] != Player.EMPTY;
+    		else if (inCol == COLS-1) return horizontalWalls[COLS-2][inRow] != Player.EMPTY;
+    		else return horizontalWalls[inCol-1][inRow] != Player.EMPTY || horizontalWalls[inCol][inRow] != Player.EMPTY;
+    	}
+    	else if (inUDLR == UDLR.LEFT) 
+    	{
+    		if (inCol == 0) return true;
+    		else if (inRow == 0) return verticalWalls[inCol-1][0] != Player.EMPTY;
+    		else if (inRow == ROWS-1) return verticalWalls[inCol-1][ROWS-2] != Player.EMPTY;
+    		else return verticalWalls[inCol-1][inRow-1] != Player.EMPTY || verticalWalls[inCol-1][inRow] != Player.EMPTY;
+    	}
+    	else // (inUDLR == UDLR.RIGHT)
+    	{
+    		if (inCol == COLS-1) return true;
+    		else if (inRow == 0) return verticalWalls[inCol][0] != Player.EMPTY;
+    		else if (inRow == ROWS-1) return verticalWalls[inCol][ROWS-2] != Player.EMPTY;
+    		else return verticalWalls[inCol][inRow-1] != Player.EMPTY || verticalWalls[inCol][inRow] != Player.EMPTY;
+    	}
     }
- 
+    
     // Inner class DrawCanvas (extends JPanel) used for custom graphics drawing.
     class DrawCanvas extends JPanel {
         @Override
@@ -422,7 +494,6 @@ public class Quoridor extends JFrame {
             		}
             	}
             }
-            
             
             // Print status-bar message
             if (currentState == GameState.PLAYING) {
