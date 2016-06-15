@@ -1,7 +1,6 @@
 package net.dlearn;
 
 import java.awt.*;
-import java.awt.List;
 import java.awt.event.*;
 import java.util.*;
 
@@ -29,7 +28,9 @@ public class Quoridor extends JFrame {
     public static final int WALL_PADDING = CELL_SIZE / 10; // wall padding
 
     // Use an enumeration (inner class) whose turn (or wall) it is
-    public enum Player { RED, BLU, EMPTY }
+    private enum Player { RED, BLU, EMPTY };
+    private enum Direction { VERTICAL, HORIZONTAL };
+    private enum UDLR { UP, DOWN, LEFT, RIGHT };
     public static Player[][] horizontalWalls;
     public static Player[][] verticalWalls;
     private Player currentPlayer;  // the current player
@@ -82,24 +83,24 @@ public class Quoridor extends JFrame {
     				
     				if (remainderY <= WALL_PADDING) 
     				{
-    					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, true, currentPlayer);
-    					else addWall(colSelected, rowSelected-1, true, currentPlayer);
+    					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.HORIZONTAL, currentPlayer);
+    					else addWall(colSelected, rowSelected-1, Direction.HORIZONTAL, currentPlayer);
     				}
     				else if (remainderY >= CELL_SIZE - WALL_PADDING)
     				{
-    					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected, true, currentPlayer);
-    					else addWall(colSelected, rowSelected, true, currentPlayer);
+    					if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected, Direction.HORIZONTAL, currentPlayer);
+    					else addWall(colSelected, rowSelected, Direction.HORIZONTAL, currentPlayer);
     				}
     				// Check that you're clicking on a vertical wall
     				else if (remainderX <= WALL_PADDING)
     				{
-    					if (remainderY <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, false, currentPlayer);
-    					else addWall(colSelected-1, rowSelected, false, currentPlayer);
+    					if (remainderY <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.VERTICAL, currentPlayer);
+    					else addWall(colSelected-1, rowSelected, Direction.VERTICAL, currentPlayer);
     				}
     				else if (remainderX >= CELL_SIZE - WALL_PADDING)
     				{
-    					if (remainderY <= CELL_SIZE / 2) addWall(colSelected, rowSelected-1, false, currentPlayer);
-    					else addWall(colSelected, rowSelected, false, currentPlayer);
+    					if (remainderY <= CELL_SIZE / 2) addWall(colSelected, rowSelected-1, Direction.VERTICAL, currentPlayer);
+    					else addWall(colSelected, rowSelected, Direction.VERTICAL, currentPlayer);
     				}
         			
         			// Player movement logic - If not adding a wall then check if mouse click is valid
@@ -127,7 +128,6 @@ public class Quoridor extends JFrame {
         						if (bluY - redY == 1) validY = bluY + 1;
         						else if (redY - bluY == 1) validY = bluY - 1;
         						
-        						boolean walled;
         						if (rowSelected == redY - 1 || rowSelected == redY + 1 || rowSelected == validY)
         						{
         							redY = rowSelected;
@@ -140,10 +140,16 @@ public class Quoridor extends JFrame {
     					else // currentPlayer == Player.BLU
         				{
     						LinkedList<Integer> validCoords = new LinkedList<Integer>();
-    						if (bluX >= 1) 
+    						boolean isBlockedByWall;
+    						boolean isNextToOpponent;
+    						if (bluX >= 1)  // Move left
     						{
-    							// Check that opponent not on this square
-    							if (redX != bluX - 1 || redY != bluY)
+    							// Check that there's no wall
+    							if (bluY == 0) isBlockedByWall = verticalWalls[bluX-1][0] != Player.EMPTY;
+    							else if (bluY == ROWS) isBlockedByWall = verticalWalls[bluX-1][ROWS-1] != Player.EMPTY;
+    							
+    							isNextToOpponent = redX == bluX - 1 && redY == bluY; 
+    							if (!isNextToOpponent)
     							{
     								validCoords.add(bluX - 1);
     								validCoords.add(bluY);
@@ -158,11 +164,11 @@ public class Quoridor extends JFrame {
         								validCoords.add(bluY);
     								}
     							}
-    							// Check that there's no wall
     						}
-    						if (bluX <= COLS - 1)
+    						if (bluX <= COLS - 1) // Move right
     						{
-    							if (redX != bluX + 1 || redY != bluY)
+    							isNextToOpponent = redX == bluX + 1 && redY == bluY;
+    							if (!isNextToOpponent)
     							{
     								validCoords.add(bluX + 1);
     								validCoords.add(bluY);
@@ -176,9 +182,10 @@ public class Quoridor extends JFrame {
     								}
     							}
     						}
-    						if (bluY >= 1)
+    						if (bluY >= 1) // Move up
     						{
-    							if (redX != bluX || redY != bluY - 1)
+    							isNextToOpponent = redX == bluX && redY == bluY - 1;
+    							if (!isNextToOpponent)
     							{
     								validCoords.add(bluX);
     								validCoords.add(bluY - 1);
@@ -192,9 +199,10 @@ public class Quoridor extends JFrame {
     								}
     							}
     						}
-    						if (bluY <= ROWS - 1)
+    						if (bluY <= ROWS - 1) // Move down
     						{
-    							if (redX != bluX || redY != bluY + 1)
+    							isNextToOpponent = redX == bluX && redY == bluY + 1; 
+    							if (!isNextToOpponent)
     							{
     								validCoords.add(bluX);
     								validCoords.add(bluY + 1);
@@ -295,10 +303,10 @@ public class Quoridor extends JFrame {
 	    else currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
     }
     
-    private boolean addWall(int col, int row, boolean isHorizontal, Player color) {
+    private boolean addWall(int col, int row, Direction inDirection, Player inColor) {
     	System.out.println("Trying to add at (col,row): "+col+", "+row);
     	
-    	assert(color == Player.RED || color == Player.BLU);
+    	assert(inColor == Player.RED || inColor == Player.BLU);
     	// if horizontalWalls[col][row] == Player.RED / BLU
     	boolean clashesHorizontally = horizontalWalls[col][row] != Player.EMPTY;
     	//System.out.println("clashesHorizontally: "+clashesHorizontally);
@@ -307,7 +315,7 @@ public class Quoridor extends JFrame {
     	//System.out.println("clashesVertically: "+clashesVertically);
     	
     	boolean clashesBack, clashesForward;
-    	if (isHorizontal) // if isHorizontal check left and right (same row different col)
+    	if (inDirection == Direction.HORIZONTAL) // if isHorizontal check left and right (same row different col)
     	{
     		if (col != 0) clashesBack = horizontalWalls[col-1][row] != Player.EMPTY;
     		else clashesBack = false;
@@ -315,7 +323,7 @@ public class Quoridor extends JFrame {
     		if (col != COLS-1) clashesForward = horizontalWalls[col+1][row] != Player.EMPTY;
     		else clashesForward = false;
     		//System.out.println("clashesForward: "+clashesForward);
-    	} else // if !isHorizontal check up and down (same col different row)
+    	} else // Direction.VERTICAL check up and down (same col different row)
     	{
     		if (row != 0) clashesBack = verticalWalls[col][row-1] != Player.EMPTY;
     		else clashesBack = false;
@@ -329,17 +337,23 @@ public class Quoridor extends JFrame {
     	if (clashes) return false;
     	else 
     	{
-    		if (isHorizontal)
+    		if (inDirection == Direction.HORIZONTAL)
     		{
-    			horizontalWalls[col][row] = color;
-    		} else
+    			horizontalWalls[col][row] = inColor;
+    		} else // inDirection == Direction.VERTICAL
     		{
-    			verticalWalls[col][row] = color;
+    			verticalWalls[col][row] = inColor;
     		}
     		//System.out.println("Sucessfully added wall at: "+row+","+col);
     		currentPlayer = (currentPlayer == Player.RED) ? Player.BLU : Player.RED;
     		return true;
     	}
+    }
+    
+    private boolean isNextToWall (int inCol, int inRow, UDLR inUDLR)
+    {
+    	// TODO... Checking code
+    	return true;
     }
  
     // Inner class DrawCanvas (extends JPanel) used for custom graphics drawing.
