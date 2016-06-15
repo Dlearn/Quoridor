@@ -198,7 +198,7 @@ public class Quoridor extends JFrame {
     		if (col != 0) clashesBack = horizontalWalls[col-1][row] != Player.EMPTY;
     		else clashesBack = false;
     		//System.out.println("clashesBack: "+clashesBack);
-    		if (col != COLS-1) clashesForward = horizontalWalls[col+1][row] != Player.EMPTY;
+    		if (col != COLS-2) clashesForward = horizontalWalls[col+1][row] != Player.EMPTY;
     		else clashesForward = false;
     		//System.out.println("clashesForward: "+clashesForward);
     	} else // Direction.VERTICAL check up and down (same col different row)
@@ -206,7 +206,7 @@ public class Quoridor extends JFrame {
     		if (row != 0) clashesBack = verticalWalls[col][row-1] != Player.EMPTY;
     		else clashesBack = false;
     		//System.out.println("clashesBack: "+clashesBack);
-    		if (row != ROWS-1) clashesForward = verticalWalls[col][row+1] != Player.EMPTY;
+    		if (row != ROWS-2) clashesForward = verticalWalls[col][row+1] != Player.EMPTY;
     		else clashesForward = false;
     		//System.out.println("clashesForward: "+clashesForward);
     	}
