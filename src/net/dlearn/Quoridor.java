@@ -1,25 +1,22 @@
 package net.dlearn;
 import static net.dlearn.Consts.*;
+import static net.dlearn.Common.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-
 import javax.swing.*;
 /**
  * Quoridor: Two-player Graphics version with Simple-OO
  */
 @SuppressWarnings("serial")
 public class Quoridor extends JFrame {
-    public static Player[][] horizontalWalls;
-    public static Player[][] verticalWalls;
+	
     LinkedList<Integer> validMovementCoords;
-    private Player currentPlayer;  // the current player
     
-    public static int redX, redY, bluX, bluY;
- 
     // Use an enumeration (inner class) to represent the various states of the game
     public enum GameState { PLAYING, RED_WON, BLU_WON }
+    private Player currentPlayer;  // the current player
     private GameState currentState;  // the current game state
 
     private DrawCanvas canvas; // Drawing canvas (JPanel) for the game board
@@ -374,39 +371,6 @@ public class Quoridor extends JFrame {
 				}
 			}
 		}
-    }
-    
-    private boolean isNextToWall (int inCol, int inRow, UDLR inUDLR)
-    {
-    	if (inUDLR == UDLR.UP) 
-    	{
-    		//if (inRow == 0) throw new AssertionError();
-    		if (inRow == 0) return true;
-    		else if (inCol == 0) return horizontalWalls[0][inRow-1] != Player.EMPTY;
-    		else if (inCol == COLS-1) return horizontalWalls[COLS-2][inRow-1] != Player.EMPTY;
-    		else return horizontalWalls[inCol-1][inRow-1] != Player.EMPTY || horizontalWalls[inCol][inRow-1] != Player.EMPTY;
-    	}
-    	else if (inUDLR == UDLR.DOWN) 
-    	{
-    		if (inRow == ROWS-1) return true;
-    		else if (inCol == 0) return horizontalWalls[0][inRow] != Player.EMPTY;
-    		else if (inCol == COLS-1) return horizontalWalls[COLS-2][inRow] != Player.EMPTY;
-    		else return horizontalWalls[inCol-1][inRow] != Player.EMPTY || horizontalWalls[inCol][inRow] != Player.EMPTY;
-    	}
-    	else if (inUDLR == UDLR.LEFT) 
-    	{
-    		if (inCol == 0) return true;
-    		else if (inRow == 0) return verticalWalls[inCol-1][0] != Player.EMPTY;
-    		else if (inRow == ROWS-1) return verticalWalls[inCol-1][ROWS-2] != Player.EMPTY;
-    		else return verticalWalls[inCol-1][inRow-1] != Player.EMPTY || verticalWalls[inCol-1][inRow] != Player.EMPTY;
-    	}
-    	else // (inUDLR == UDLR.RIGHT)
-    	{
-    		if (inCol == COLS-1) return true;
-    		else if (inRow == 0) return verticalWalls[inCol][0] != Player.EMPTY;
-    		else if (inRow == ROWS-1) return verticalWalls[inCol][ROWS-2] != Player.EMPTY;
-    		else return verticalWalls[inCol][inRow-1] != Player.EMPTY || verticalWalls[inCol][inRow] != Player.EMPTY;
-    	}
     }
     
     // Inner class DrawCanvas (extends JPanel) used for custom graphics drawing.

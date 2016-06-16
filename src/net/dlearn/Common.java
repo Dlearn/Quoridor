@@ -2,9 +2,11 @@ package net.dlearn;
 import static net.dlearn.Consts.*;
 
 public class Common {
+	static Player[][] horizontalWalls;
+    static Player[][] verticalWalls;
+    static int redX, redY, bluX, bluY;
 	
-	
-	private boolean isNextToWall (int inCol, int inRow, UDLR inUDLR)
+	static boolean isNextToWall (int inCol, int inRow, UDLR inUDLR)
     {
     	if (inUDLR == UDLR.UP) 
     	{

@@ -1,14 +1,12 @@
 package net.dlearn;
 import static net.dlearn.Consts.*;
+import static net.dlearn.Common.*;
 
 public class MazeSolver {
 	
 	private static boolean[][] wasHere = new boolean[COLS][ROWS];
-	//private static int startRedX, startRedY, startBluX, startBluY;
-	private static Player[][] horizontalWalls;
-	private static Player[][] verticalWalls;
 	
-	public static boolean isSolvable(int inRedX, int inRedY, int inBluX, int inBluY, Player[][] inHorizontalWalls, Player[][] inVerticalWalls)
+	public static boolean isSolvable()
 	{
 		for (int col = 0; col < COLS; col++){
 			for(int row = 0; row < ROWS; row++){
@@ -21,12 +19,11 @@ public class MazeSolver {
 		startBluX = inBluX;
 		startBluY = inBluY;
 		*/
-		horizontalWalls = inHorizontalWalls;
-		verticalWalls = inVerticalWalls;
+		
 		// Red must be able to get to row = 0
 		// Blu must be able to get to row = ROWS-1
-		boolean redPossible = recursiveSolve(inRedX, inRedY, Player.RED);
-		boolean bluPossible = recursiveSolve(inBluX, inBluY, Player.BLU);
+		boolean redPossible = recursiveSolve(redX, redY, Player.RED);
+		boolean bluPossible = recursiveSolve(bluX, bluY, Player.BLU);
 		return redPossible && bluPossible;
 	}
 
