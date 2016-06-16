@@ -2,8 +2,8 @@ package net.dlearn;
 
 public final class Consts {
     // Named-constants for the game board
-	public static final int ROWS = 9;  // ROWS by COLS cells
-	public static final int COLS = 9;
+	static final int ROWS = 9;  // ROWS by COLS cells
+	static final int COLS = 9;
 	 
 	// Named-constants of the various dimensions used for graphics drawing
 	static final int CELL_SIZE = 50; // cell width and height (square)

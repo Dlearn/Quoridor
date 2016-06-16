@@ -3,16 +3,34 @@ import static net.dlearn.Consts.*;
 
 public class MazeSolver {
 	
-	boolean[][] wasHere = new boolean[COLS][ROWS];
+	private static boolean[][] wasHere = new boolean[COLS][ROWS];
+	//private static int startRedX, startRedY, startBluX, startBluY;
+	private static Player[][] horizontalWalls;
+	private static Player[][] verticalWalls;
 	
-	public boolean isSolvable(int inRedX, int inRedY, int inBluX, int inBluY, Player[][] inHorizontalWalls, Player[][] inVerticalWalls)
+	public static boolean isSolvable(int inRedX, int inRedY, int inBluX, int inBluY, Player[][] inHorizontalWalls, Player[][] inVerticalWalls)
 	{
+		for (int col = 0; col < COLS; col++){
+			for(int row = 0; row < ROWS; row++){
+				wasHere[col][row] = false;
+			}
+		}
+		/*
+		startRedX = inRedX;
+		startRedY = inRedY;
+		startBluX = inBluX;
+		startBluY = inBluY;
+		*/
+		horizontalWalls = inHorizontalWalls;
+		verticalWalls = inVerticalWalls;
 		// Red must be able to get to row = 0
 		// Blu must be able to get to row = ROWS-1
-		return true;
+		boolean redPossible = recursiveSolve(inRedX, inRedY, Player.RED);
+		boolean bluPossible = recursiveSolve(inBluX, inBluY, Player.BLU);
+		return redPossible && bluPossible;
 	}
 
-	private boolean recursiveSolve(int inX, int inY, Player inColor)
+	private static boolean recursiveSolve(int inX, int inY, Player inColor)
 	{
 		if (inColor == Player.EMPTY) throw new AssertionError();
 		
