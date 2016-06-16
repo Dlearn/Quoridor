@@ -18,7 +18,6 @@ public class MazeSolver {
 		// Blu must be able to get to row = ROWS-1
 		boolean bluPossible = true;
 		boolean redPossible = recursiveSolve(redX, redY, Player.RED);
-		System.out.println("Is Red possible? "+redPossible);
 		if (redPossible) 
 		{
 			for (int col = 0; col < COLS; col++){
@@ -27,8 +26,8 @@ public class MazeSolver {
 				}
 			}
 			bluPossible = recursiveSolve(bluX, bluY, Player.BLU);
-			System.out.println("Is Blu possible? "+bluPossible);
 		}
+		System.out.println("Is Red/Blu possible? "+redPossible+"/"+bluPossible);
 		return redPossible && bluPossible;
 	}
 
@@ -39,11 +38,6 @@ public class MazeSolver {
 		// Teriminating Conditions
 		if (inColor == Player.RED && inY == 0) return true;
 		else if (inColor == Player.BLU && inY == ROWS-1) return true;
-		if (wasHere[inX][inY]) 
-		{
-			System.out.println(inX+", "+inY+". Rats! We've been here before.");
-			return false;
-		}
 		wasHere[inX][inY] = true;
 		
 		// Check if can go up

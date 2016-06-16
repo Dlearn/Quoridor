@@ -150,7 +150,7 @@ public class Quoridor extends JFrame {
         // Initialize player starting positions
         redX = 4; redY = ROWS - 1;
 	    bluX = 4; bluY = 0;
-	    System.out.println("Is this maze solvable? "+MazeSolver.isSolvable());
+	    
         currentState = GameState.PLAYING; // ready to play
         currentPlayer = Player.RED;       // red plays first
         updateValidMovementCoords();
@@ -165,12 +165,8 @@ public class Quoridor extends JFrame {
     	else if (row == ROWS-1) row = ROWS-2;
     	
     	if (inColor == Player.EMPTY) throw new AssertionError();
-    	// if horizontalWalls[col][row] == Player.RED / BLU
     	boolean clashesHorizontally = horizontalWalls[col][row] != Player.EMPTY;
-    	//System.out.println("clashesHorizontally: "+clashesHorizontally);
-    	// if verticalWalls[col][row] == Player.RED / BLU
     	boolean clashesVertically = verticalWalls[col][row] != Player.EMPTY;
-    	//System.out.println("clashesVertically: "+clashesVertically);
     	
     	boolean clashesBack, clashesForward;
     	if (inDirection == Direction.HORIZONTAL) // if isHorizontal check left and right (same row different col)
@@ -198,9 +194,20 @@ public class Quoridor extends JFrame {
     		if (inDirection == Direction.HORIZONTAL)
     		{
     			horizontalWalls[col][row] = inColor;
+    			// If it becomes unsolvable, PURGE IT and fail
+    			if (!MazeSolver.isSolvable()) 
+    			{
+    				horizontalWalls[col][row] = Player.EMPTY;
+    				return false;
+    			}
     		} else // inDirection == Direction.VERTICAL
     		{
     			verticalWalls[col][row] = inColor;
+    			if (!MazeSolver.isSolvable()) 
+    			{
+    				verticalWalls[col][row] = Player.EMPTY;
+    				return false;
+    			}
     		}
     		//System.out.println("Successfully added wall at: "+row+","+col);
     		updateGame();
