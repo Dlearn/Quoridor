@@ -1,4 +1,5 @@
 package net.dlearn;
+import static net.dlearn.Consts.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -10,36 +11,12 @@ import javax.swing.*;
  */
 @SuppressWarnings("serial")
 public class Quoridor extends JFrame {
-    // Named-constants for the game board
-    public static final int ROWS = 9;  // ROWS by COLS cells
-    public static final int COLS = 9;
- 
-    // Named-constants of the various dimensions used for graphics drawing
-    public static final int CELL_SIZE = 50; // cell width and height (square)
-    public static final int CANVAS_WIDTH = CELL_SIZE * COLS;  // the drawing canvas
-    public static final int CANVAS_HEIGHT = CELL_SIZE * ROWS;
-    public static final int GRID_WIDTH = 3;                   // Grid-line's width
-    public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2; // Grid-line's half-width
-    // Players (circles) are displayed inside a cell, with padding from border
-    public static final int CELL_PADDING = CELL_SIZE / 6;
-    public static final int SYMBOL_SIZE = CELL_SIZE - CELL_PADDING * 2; // width/height
-    public static final int SYMBOL_STROKE_WIDTH = 4; // pen stroke width
-    public static final int WALL_STROKE_WIDTH = 5; // wall stroke width
-    public static final int WALL_PADDING = CELL_SIZE / 10; // wall padding
-
-    // Use an enumeration (inner class) whose turn (or wall) it is
-    private enum Player { RED, BLU, EMPTY };
-    private enum Direction { VERTICAL, HORIZONTAL };
-    private enum UDLR { UP, DOWN, LEFT, RIGHT };
     public static Player[][] horizontalWalls;
     public static Player[][] verticalWalls;
     LinkedList<Integer> validMovementCoords;
     private Player currentPlayer;  // the current player
     
-    public static int redX;
-    public static int redY;
-    public static int bluX;
-    public static int bluY;
+    public static int redX, redY, bluX, bluY;
  
     // Use an enumeration (inner class) to represent the various states of the game
     public enum GameState { PLAYING, RED_WON, BLU_WON }
@@ -155,7 +132,7 @@ public class Quoridor extends JFrame {
     }
  
     /** Initialize the game-board contents and the status */
-    public void initGame() {
+    private void initGame() {
         horizontalWalls = new Player[COLS-1][ROWS-1];
         verticalWalls = new Player[COLS-1][ROWS-1];
         validMovementCoords = new LinkedList<Integer>();
