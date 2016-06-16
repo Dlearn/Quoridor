@@ -143,12 +143,14 @@ public class Quoridor extends JFrame {
         }
         
         // Test code for isNextToWall method
-        //addWall(0,0,Direction.VERTICAL,Player.RED);
+        //addWall(3,6,Direction.HORIZONTAL,Player.RED);
+        //addWall(5,6,Direction.HORIZONTAL,Player.RED);
         //System.out.println(isNextToWall(1,2,UDLR.LEFT));
         
         // Initialize player starting positions
         redX = 4; redY = ROWS - 1;
 	    bluX = 4; bluY = 0;
+	    System.out.println("Is this maze solvable? "+MazeSolver.isSolvable());
         currentState = GameState.PLAYING; // ready to play
         currentPlayer = Player.RED;       // red plays first
         updateValidMovementCoords();
