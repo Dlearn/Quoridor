@@ -9,15 +9,12 @@ const ROWS = 9;
 
 // Named-constants of the various dimensions used for graphics drawing
 const CELL_SIZE = 50; // cell width and height (square)
-const CELL_PADDING = CELL_SIZE / 6;
 const CANVAS_WIDTH = CELL_SIZE * COLS;  // the drawing canvas
 const CANVAS_HEIGHT = CELL_SIZE * ROWS;
-const GRID_WIDTH = 3;                   // Grid-line's width
-const GRID_WIDTH_HALF = GRID_WIDTH / 2; // Grid-line's half-width
 
 // Players (circles) are displayed inside a cell, with padding from border
-const SYMBOL_SIZE = CELL_SIZE - CELL_PADDING * 2; // width/height
-const SYMBOL_STROKE_WIDTH = 4; // pen stroke width
+const CIRCLE_RADIUS = 15; // width/height
+const CIRCLE_LINEWIDTH = 4; // pen stroke width
 
 // Wall constants
 const WALL_STROKE_WIDTH = 5; // wall stroke width
@@ -29,23 +26,17 @@ const Direction = { VERTICAL: 'VERTICAL', HORIZONTAL: 'HORIZONTAL'};
 const Player = { RED: 'RED', BLU: 'BLU', EMPTY: 'EMPTY'};
 const GameState = { PLAYING: 'PLAYING', RED_WON: 'RED_WON', BLU_WON: 'BLU_WON'};
 
-var activePlayer = Player.RED;
-var currentState = GameState.PLAYING;
-
-var WALLLINE_WIDTH = 4;
-var WALLLINE_COLOR = "#ddd";
+var GRIDLINE_WIDTH = 4;
+var GRIDLINE_COLOR = "#ddd";
 
 var canvas = document.getElementById('quoridor-board');
 var context = canvas.getContext('2d');
-
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
-//context.translate(0.5, 0.5);
 
 var gameState;
 
-function initGameState()
-{
+function initGameState() {
     // Player positions
     var redX = 4, redY = ROWS-1;
     var bluX = 4, bluY = 0;
@@ -71,8 +62,8 @@ function initGameState()
     }
 
     // Initializing valid movement coords
-    var validMovementsRed = [];
-    var validMovementsBlu = [];
+    var validMovementsRed = [[3,8],[4,7],[5,8]];
+    var validMovementsBlu = [[3,0],[4,1],[5,0]];
 
     // Initialize current state and current player
     var currentState = GameState.PLAYING;
@@ -91,62 +82,16 @@ function initGameState()
         currentState : currentState,
         activePlayer : activePlayer
     }
+
+    drawO(redX,redY,Player.RED);
+    drawO(bluX,bluY,Player.BLU);
 }
 
-function addPlayingPiece (mouse) {
-    var xCordinate;
-    var yCordinate;
-
-    for (var x = 0;x < COLS;x++) {
-        for (var y = 0;y < ROWS;y++) {
-            xCordinate = x * CELL_SIZE;
-            yCordinate = y * CELL_SIZE;
-
-            if (
-                mouse.x >= xCordinate && mouse.x <= xCordinate + CELL_SIZE &&
-                mouse.y >= yCordinate && mouse.y <= yCordinate + CELL_SIZE
-            ) {
-
-                clearPlayingArea(xCordinate, yCordinate);
-
-                if (activePlayer === Player.RED) {
-                    drawO(xCordinate, yCordinate, Player.RED);
-                } else {
-                    drawO(xCordinate, yCordinate, Player.BLU);
-                }
-            }
-        }
-    }
-}
-
-function clearPlayingArea (xCordinate, yCordinate) {
-    context.fillStyle = "#fff";
-    context.fillRect(
-        xCordinate,
-        yCordinate,
-        CELL_SIZE,
-        CELL_SIZE
-    );
-}
-function drawO (xCordinate, yCordinate, inActivePlayer) {
-    var halfSectionSize = CELL_SIZE / 2;
-    var centerX = xCordinate + halfSectionSize;
-    var centerY = yCordinate + halfSectionSize;
-    var radius = CELL_SIZE / 3;
-
-    context.lineWidth = 6;
-    if (inActivePlayer === Player.RED) context.strokeStyle = "red";
-    else if (inActivePlayer === Player.BLU) context.strokeStyle = "blue";
-    context.beginPath();
-    context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    context.stroke();
-}
-
-function drawLines () {
+function drawGridLines () {
     var lineStart = 0;
     var lineLength = CANVAS_WIDTH;
-    context.lineWidth = WALLLINE_WIDTH;
-    context.strokeStyle = WALLLINE_COLOR;
+    context.lineWidth = GRIDLINE_WIDTH;
+    context.strokeStyle = GRIDLINE_COLOR;
     context.lineCap = 'round';
     context.beginPath();
 
@@ -165,7 +110,107 @@ function drawLines () {
     context.stroke();
 }
 
-drawLines();
+function addPlayingPiece (mouse) {
+    var colSelected = Math.floor(mouse.x / CELL_SIZE);
+    var rowSelected = Math.floor(mouse.y / CELL_SIZE);
+
+    var activePlayer2 = gameState.activePlayer;
+    var validMovements2;
+    if (activePlayer2 === Player.RED) validMovements2 = gameState.validMovementsRed;
+    else validMovements2 = gameState.validMovementsBlu; // Assume activePlayer !== Player.EMPTY
+    for (var i=0; i<validMovements2.length; i++)
+    {
+        if (colSelected === validMovements2[i][0] && rowSelected === validMovements2[i][1])
+        {
+            console.log("Valid!: " + rowSelected + "," + colSelected);
+
+            if (activePlayer2 === Player.RED)
+            {
+                // Clear old player token
+                clearPlayingArea(gameState.redX, gameState.redY);
+
+                // Update coordinates for new player token
+                gameState.redX = colSelected;
+                gameState.redY = rowSelected;
+
+                // Paint new player token
+                drawO(gameState.redX, gameState.redY, Player.RED);
+            }
+            else // Assume activePlayer !== Player.EMPTY
+            {
+                clearPlayingArea(gameState.bluX, gameState.bluY);
+
+                gameState.bluX = colSelected;
+                gameState.bluY = rowSelected;
+
+                drawO(gameState.bluX, gameState.bluY, Player.BLU);
+            }
+
+            updateGame();
+        }
+    }
+}
+
+function updateGame() {
+    if (gameState.redY === 0) gameState.currentState = GameState.RED_WON;
+    else if (gameState.bluY === ROWS-1) gameState.currentState = GameState.BLU_WON;
+    if (gameState.activePlayer === Player.RED) gameState.activePlayer = Player.BLU;
+    else gameState.activePlayer = Player.RED;
+    // Update validMovements
+}
+
+function clearPlayingArea (inX, inY) {
+    context.fillStyle = "#fff";
+    context.fillRect(
+        inX * CELL_SIZE + GRIDLINE_WIDTH,
+        inY * CELL_SIZE + GRIDLINE_WIDTH,
+        CELL_SIZE - 2 * GRIDLINE_WIDTH,
+        CELL_SIZE - 2 * GRIDLINE_WIDTH
+    );
+}
+function drawO (inX, inY, inActivePlayer) {
+    var halfSectionSize = CELL_SIZE / 2;
+    var centerX = inX * CELL_SIZE + halfSectionSize;
+    var centerY = inY * CELL_SIZE + halfSectionSize;
+    //var radius = CELL_SIZE / 3;
+    var radius = CIRCLE_RADIUS;
+
+    context.lineWidth = CIRCLE_LINEWIDTH;
+    if (inActivePlayer === Player.RED) context.strokeStyle = "red";
+    else if (inActivePlayer === Player.BLU) context.strokeStyle = "blue";
+    context.beginPath();
+    context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    context.stroke();
+}
+function drawWall (inX, inY, inActivePlayer, inDirection) {
+    if (inDirection === Direction.HORIZONTAL)
+    {
+        var x1 = inX * CELL_SIZE + WALL_PADDING;
+        var x2 = (inX + 2) * CELL_SIZE - WALL_PADDING;
+        var y = (inY + 1) * CELL_SIZE;
+
+        context.lineWidth = GRIDLINE_WIDTH;
+        context.strokeStyle = GRIDLINE_COLOR;
+        context.lineCap = 'round';
+        context.beginPath();
+
+        // Horizontal lines
+        for (var y = 1;y <= ROWS-1;y++) {
+            context.moveTo(x1, y * CELL_SIZE);
+            context.lineTo(x2, y * CELL_SIZE);
+        }
+
+        context.stroke();
+    }
+    else // Direction.VERTICAL
+    {
+
+    }
+}
+
+
+initGameState();
+drawGridLines();
 
 function getCanvasMousePosition (event) {
     var rect = canvas.getBoundingClientRect();
@@ -177,13 +222,6 @@ function getCanvasMousePosition (event) {
 }
 
 canvas.addEventListener('mouseup', function (event) {
-    if (activePlayer === Player.RED) {
-        activePlayer = Player.BLU;
-    } else {
-        activePlayer = Player.RED;
-    }
-
     var canvasMousePosition = getCanvasMousePosition(event);
     addPlayingPiece(canvasMousePosition);
-    drawLines();
 });
