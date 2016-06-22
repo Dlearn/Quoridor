@@ -16,7 +16,10 @@ const CANVAS_HEIGHT = CELL_SIZE * ROWS;
 const CIRCLE_RADIUS = 15; // width/height
 const CIRCLE_LINEWIDTH = 4; // pen stroke width
 
-// Wall constants
+// Grid constants
+var GRIDLINE_WIDTH = 4;
+var GRIDLINE_COLOR = "#ddd";
+
 const WALL_STROKE_WIDTH = 5; // wall stroke width
 const WALL_PADDING = CELL_SIZE / 10; // wall padding
 
@@ -26,8 +29,7 @@ const Direction = { VERTICAL: 'VERTICAL', HORIZONTAL: 'HORIZONTAL'};
 const Player = { RED: 'RED', BLU: 'BLU', EMPTY: 'EMPTY'};
 const GameState = { PLAYING: 'PLAYING', RED_WON: 'RED_WON', BLU_WON: 'BLU_WON'};
 
-var GRIDLINE_WIDTH = 4;
-var GRIDLINE_COLOR = "#ddd";
+
 
 var canvas = document.getElementById('quoridor-board');
 var context = canvas.getContext('2d');
@@ -85,6 +87,7 @@ function initGameState() {
 
     drawO(redX,redY,Player.RED);
     drawO(bluX,bluY,Player.BLU);
+
 }
 
 function drawGridLines () {
@@ -183,22 +186,24 @@ function drawO (inX, inY, inActivePlayer) {
     context.stroke();
 }
 function drawWall (inX, inY, inActivePlayer, inDirection) {
+    console.log("Drawing a " + inActivePlayer + " wall at: " + inX + ", " + inY);
     if (inDirection === Direction.HORIZONTAL)
     {
         var x1 = inX * CELL_SIZE + WALL_PADDING;
         var x2 = (inX + 2) * CELL_SIZE - WALL_PADDING;
-        var y = (inY + 1) * CELL_SIZE;
+        //var y = (inY + 1) * CELL_SIZE;
+        var y = 75;
+        console.log(x1 + ", " + x2 + " at y: " + y);
 
-        context.lineWidth = GRIDLINE_WIDTH;
-        context.strokeStyle = GRIDLINE_COLOR;
+        context.lineWidth = WALL_STROKE_WIDTH;
+        if (inActivePlayer === Player.RED) context.strokeStyle = "red";
+        else if (inActivePlayer === Player.BLU) context.strokeStyle = "blue";
         context.lineCap = 'round';
         context.beginPath();
 
         // Horizontal lines
-        for (var y = 1;y <= ROWS-1;y++) {
-            context.moveTo(x1, y * CELL_SIZE);
-            context.lineTo(x2, y * CELL_SIZE);
-        }
+        context.moveTo(x1, y * CELL_SIZE);
+        context.lineTo(x2, y * CELL_SIZE);
 
         context.stroke();
     }
@@ -208,9 +213,9 @@ function drawWall (inX, inY, inActivePlayer, inDirection) {
     }
 }
 
-
 initGameState();
 drawGridLines();
+drawWall(0,0,Player.RED,Direction.HORIZONTAL);
 
 function getCanvasMousePosition (event) {
     var rect = canvas.getBoundingClientRect();
