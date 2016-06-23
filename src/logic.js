@@ -2,7 +2,7 @@
 
 'use strict';
 
-function addWall(inCol, inRow, inDirection) {
+function canAddWall(inCol, inRow, inDirection) {
     if (gameState.activePlayer == Player.EMPTY) throw Error("Player cannot be EMPTY");
 
     //Hack to clamp the wall addition
@@ -33,34 +33,35 @@ function addWall(inCol, inRow, inDirection) {
     }
 
     var clashes = clashesHorizontally || clashesVertically || clashesBack || clashesForward;
-    if (clashes) {changeGameText("WALL CLASH"); return false;}
-    else
+    if (clashes) return false;
+    else return true;
+}
+
+function addWall(inCol, inRow, inDirection) {
+    if (inDirection == Direction.HORIZONTAL)
     {
-        if (inDirection == Direction.HORIZONTAL)
-        {
-            gameState.horizontalWalls[inCol][inRow] = gameState.activePlayer;
+        gameState.horizontalWalls[inCol][inRow] = gameState.activePlayer;
 
-            // If it becomes unsolvable, PURGE IT and fail
-            if (!isSolvable())
-            {
-                gameState.horizontalWalls[inCol][inRow] = Player.EMPTY;
-                return false;
-            }
-        } else // inDirection == Direction.VERTICAL
+        // If it becomes unsolvable, PURGE IT and fail
+        if (!isSolvable())
         {
-            gameState.verticalWalls[inCol][inRow] = gameState.activePlayer;
-
-            if (!isSolvable())
-            {
-                gameState.verticalWalls[inCol][inRow] = Player.EMPTY;
-                return false;
-            }
+            gameState.horizontalWalls[inCol][inRow] = Player.EMPTY;
+            return false;
         }
-        //console.log("Successfully added " + inDirection + " wall at: "+inRow+","+inCol);
+    } else // inDirection == Direction.VERTICAL
+    {
+        gameState.verticalWalls[inCol][inRow] = gameState.activePlayer;
 
-        updateGame();
-        return true;
+        if (!isSolvable())
+        {
+            gameState.verticalWalls[inCol][inRow] = Player.EMPTY;
+            return false;
+        }
     }
+    //console.log("Successfully added " + inDirection + " wall at: "+inRow+","+inCol);
+
+    updateGame();
+    return true;
 }
 
 function isNextToWallOrBorder (inCol, inRow, inUDLR) {

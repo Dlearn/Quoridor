@@ -34,15 +34,13 @@
       <file leaf-file-name="main.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="669">
-              <caret line="368" column="54" selection-start-line="368" selection-start-column="54" selection-end-line="368" selection-end-column="54" />
+            <state relative-caret-position="678">
+              <caret line="353" column="31" selection-start-line="353" selection-start-column="31" selection-end-line="353" selection-end-column="31" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="n#!!block;n#changeGameText#0" expanded="false" />
                 <element signature="n#!!block;n#initGameState#0" expanded="false" />
                 <element signature="n#!!block;n#drawGridLines#0" expanded="false" />
-                <element signature="n#!!block;n#updateGame#0" expanded="false" />
-                <element signature="n#!!block;n#drawO#0" expanded="false" />
                 <element signature="n#!!block;n#drawWall#0" expanded="false" />
                 <element signature="n#!!block;n#redrawAll#0" expanded="false" />
                 <element signature="n#!!block;n#getCanvasMousePosition#0" expanded="false" />
@@ -54,8 +52,8 @@
       <file leaf-file-name="logic.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/logic.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" column="4" selection-start-line="7" selection-start-column="4" selection-end-line="11" selection-end-column="45" />
+            <state relative-caret-position="442">
+              <caret line="35" column="30" selection-start-line="35" selection-start-column="30" selection-end-line="35" selection-end-column="30" />
               <folding>
                 <element signature="n#!!block;n#isNextToWallOrBorder#0" expanded="false" />
                 <element signature="n#!!block;n#updateValidMovements#0" expanded="false" />
@@ -293,12 +291,12 @@
       <option name="presentableId" value="Default" />
       <updated>1466567109918</updated>
       <workItem from="1466567111254" duration="14825000" />
-      <workItem from="1466644769786" duration="16924000" />
+      <workItem from="1466644769786" duration="19833000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="31749000" />
+    <option name="totallyTimeSpent" value="34658000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -349,8 +347,6 @@
             <element signature="n#!!block;n#changeGameText#0" expanded="false" />
             <element signature="n#!!block;n#initGameState#0" expanded="false" />
             <element signature="n#!!block;n#drawGridLines#0" expanded="false" />
-            <element signature="n#!!block;n#updateGame#0" expanded="false" />
-            <element signature="n#!!block;n#drawO#0" expanded="false" />
             <element signature="n#!!block;n#drawWall#0" expanded="false" />
             <element signature="n#!!block;n#redrawAll#0" expanded="false" />
             <element signature="n#!!block;n#getCanvasMousePosition#0" expanded="false" />
@@ -401,8 +397,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/logic.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="4" selection-start-line="7" selection-start-column="4" selection-end-line="11" selection-end-column="45" />
+        <state relative-caret-position="442">
+          <caret line="35" column="30" selection-start-line="35" selection-start-column="30" selection-end-line="35" selection-end-column="30" />
           <folding>
             <element signature="n#!!block;n#isNextToWallOrBorder#0" expanded="false" />
             <element signature="n#!!block;n#updateValidMovements#0" expanded="false" />
@@ -414,15 +410,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="669">
-          <caret line="368" column="54" selection-start-line="368" selection-start-column="54" selection-end-line="368" selection-end-column="54" />
+        <state relative-caret-position="678">
+          <caret line="353" column="31" selection-start-line="353" selection-start-column="31" selection-end-line="353" selection-end-column="31" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="n#!!block;n#changeGameText#0" expanded="false" />
             <element signature="n#!!block;n#initGameState#0" expanded="false" />
             <element signature="n#!!block;n#drawGridLines#0" expanded="false" />
-            <element signature="n#!!block;n#updateGame#0" expanded="false" />
-            <element signature="n#!!block;n#drawO#0" expanded="false" />
             <element signature="n#!!block;n#drawWall#0" expanded="false" />
             <element signature="n#!!block;n#redrawAll#0" expanded="false" />
             <element signature="n#!!block;n#getCanvasMousePosition#0" expanded="false" />
