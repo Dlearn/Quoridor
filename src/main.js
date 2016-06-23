@@ -14,7 +14,7 @@ const CANVAS_HEIGHT = CELL_SIZE * ROWS;
 
 // Players (circles) are displayed inside a cell, with padding from border
 const CIRCLE_RADIUS = 15; // width/height
-const CIRCLE_LINEWIDTH = 4; // pen stroke width
+const CIRCLE_LINEWIDTH = 2; // pen stroke width
 
 // Grid constants
 var GRIDLINE_WIDTH = 3;
@@ -29,30 +29,31 @@ const Direction = { VERTICAL: 'VERTICAL', HORIZONTAL: 'HORIZONTAL'};
 const Player = { RED: 'RED', BLU: 'BLU', EMPTY: 'EMPTY'};
 const GameStatus = { PLAYING: 'PLAYING', RED_WON: 'RED_WON', BLU_WON: 'BLU_WON'};
 
-/*
-const LEFT_NOTATION_WIDTH = 25;
+const NOTATION_PADDING = 35;
+var gameText = document.getElementById('game-text');
+gameText.width = NOTATION_PADDING + CANVAS_WIDTH;
+gameText.height = NOTATION_PADDING + 10;
+var gameTextContext = gameText.getContext('2d');
+gameTextContext.font = "22px Palatino";
+gameTextContext.fillText("WELCOME TO QUORIDOR!", 55, 25);
+
 var leftNotation = document.getElementById('left-notation');
-var context = leftNotation.getContext('2d');
-context.width = LEFT_NOTATION_WIDTH;
-context.height = CANVAS_HEIGHT;
-context.beginPath();
-context.rect(0,0,LEFT_NOTATION_WIDTH,CANVAS_HEIGHT);
-context.fillStyle = "black";
-context.fill();
-//var botNotation = document.getElementById('bot-notation');
-*/
-/*
-var canvasGrid = document.getElementById('quoridor-grid');
-canvasGrid.width = CANVAS_WIDTH;
-canvasGrid.height = CANVAS_HEIGHT;
-var context = canvasGrid.getContext('2d');
-*/
+leftNotation.width = NOTATION_PADDING;
+leftNotation.height = CANVAS_HEIGHT;
+var leftContext = leftNotation.getContext('2d');
+leftContext.font = "26px Arial";
+for (var i=0; i < ROWS; i++) leftContext.fillText(9-i, 10, 35+i*CELL_SIZE);
+var botNotation = document.getElementById('bot-notation');
+botNotation.width = NOTATION_PADDING + CANVAS_WIDTH;
+botNotation.height = NOTATION_PADDING;
+var botContext = botNotation.getContext('2d');
+botContext.font = "26px Arial";
+for (var i=0; i < ROWS; i++) botContext.fillText(String.fromCharCode(65+i), 55+i*CELL_SIZE, 25);
 
 var canvas = document.getElementById('quoridor-board');
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 var context = canvas.getContext('2d');
-
 
 var gameState = [];
 
@@ -106,7 +107,6 @@ function initGameState() {
     drawO(redX,redY,Player.RED);
     drawO(bluX,bluY,Player.BLU);
 }
-
 function drawGridLines () {
     var lineStart = 0;
     var lineLength = CANVAS_WIDTH;
@@ -120,16 +120,29 @@ function drawGridLines () {
         context.moveTo(lineStart, y * CELL_SIZE);
         context.lineTo(lineLength, y * CELL_SIZE);
     }
-
     // Vertical lines
     for (var x = 1;x <= COLS-1;x++) {
         context.moveTo(x * CELL_SIZE, lineStart);
         context.lineTo(x * CELL_SIZE, lineLength);
     }
+    context.stroke();
+
+    context.lineWidth = 4;
+    context.strokeStyle = "black";
+    context.beginPath();
+    // Horizontal Lines
+    context.moveTo(0, 0);
+    context.lineTo(CANVAS_WIDTH, 0);
+    context.moveTo(0, CANVAS_HEIGHT);
+    context.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT);
+    // Vertical Lines
+    context.moveTo(0, 0);
+    context.lineTo(0, CANVAS_HEIGHT);
+    context.moveTo(CANVAS_WIDTH, 0);
+    context.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT);
 
     context.stroke();
 }
-
 function clickAt (inMousePosition) {
     if (gameState.currentStatus === GameStatus.PLAYING) {
         // Wall placement
@@ -196,7 +209,6 @@ function clickAt (inMousePosition) {
     }
     else console.log("Why is the game not playing? GameStatus !== GameStatus.PLAYING");
 }
-
 function updateGame() {
     // Check if red or blu wins
     if (gameState.redY === 0) gameState.currentStatus = GameStatus.RED_WON;
@@ -209,7 +221,6 @@ function updateGame() {
     // Update valid movements
     updateValidMovements();
 }
-
 function clearPlayingArea (inX, inY) {
     context.clearRect(
         inX * CELL_SIZE + GRIDLINE_WIDTH,
@@ -225,11 +236,13 @@ function drawO (inX, inY, inActivePlayer) {
     //var radius = CELL_SIZE / 3;
     var radius = CIRCLE_RADIUS;
 
-    context.lineWidth = CIRCLE_LINEWIDTH;
-    if (inActivePlayer === Player.RED) context.strokeStyle = "red";
-    else if (inActivePlayer === Player.BLU) context.strokeStyle = "blue";
     context.beginPath();
     context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    if (inActivePlayer === Player.RED) context.fillStyle = "red";
+    else if (inActivePlayer === Player.BLU) context.fillStyle = "blue";
+    context.fill();
+    context.lineWidth = CIRCLE_LINEWIDTH;
+    context.strokeStyle = "black";
     context.stroke();
 }
 function drawWall (inX, inY, inActivePlayer, inDirection) {
@@ -259,8 +272,8 @@ function drawWall (inX, inY, inActivePlayer, inDirection) {
     context.stroke();
 }
 
-initGameState();
 drawGridLines();
+initGameState();
 
 function getCanvasMousePosition (event) {
     var rect = canvas.getBoundingClientRect();
