@@ -2,10 +2,72 @@
 
 'use strict';
 
+function addWall(inCol, inRow, inDirection) {
+    if (gameState.activePlayer == Player.EMPTY) throw Error("Player cannot be EMPTY");
 
+    //Hack to clamp the wall addition
+    if (inCol == -1) inCol = 0;
+    else if (inCol == COLS-1) inCol = COLS-2;
+    if (inRow == -1) inRow = 0;
+    else if (inRow == ROWS-1) inRow = ROWS-2;
+
+    var horizontalWalls = gameState.horizontalWalls;
+    var verticalWalls = gameState.verticalWalls;
+
+    var clashesHorizontally = horizontalWalls[inCol][inRow] != Player.EMPTY;
+    var clashesVertically = verticalWalls[inCol][inRow] != Player.EMPTY;
+    var clashesBack, clashesForward;
+
+    if (inDirection == Direction.HORIZONTAL) // if isHorizontal check left and right (same inRow different inCol)
+    {
+        if (inCol != 0) clashesBack = horizontalWalls[inCol-1][inRow] != Player.EMPTY;
+        else clashesBack = false;
+        if (inCol != COLS-2) clashesForward = horizontalWalls[inCol+1][inRow] != Player.EMPTY;
+        else clashesForward = false;
+    } else // Direction.VERTICAL check up and down (same inCol different inRow)
+    {
+        if (inRow != 0) clashesBack = verticalWalls[inCol][inRow-1] != Player.EMPTY;
+        else clashesBack = false;
+        if (inRow != ROWS-2) clashesForward = verticalWalls[inCol][inRow+1] != Player.EMPTY;
+        else clashesForward = false;
+    }
+
+    var clashes = clashesHorizontally || clashesVertically || clashesBack || clashesForward;
+    if (clashes) return false;
+    else
+    {
+        if (inDirection == Direction.HORIZONTAL)
+        {
+            gameState.horizontalWalls[inCol][inRow] = gameState.activePlayer;
+
+            // If it becomes unsolvable, PURGE IT and fail
+            if (!isSolvable())
+            {
+                gameState.horizontalWalls[inCol][inRow] = Player.EMPTY;
+                return false;
+            }
+            drawWall(inCol, inRow, gameState.activePlayer, Direction.HORIZONTAL);
+        } else // inDirection == Direction.VERTICAL
+        {
+            gameState.verticalWalls[inCol][inRow] = gameState.activePlayer;
+
+            if (!isSolvable())
+            {
+                gameState.verticalWalls[inCol][inRow] = Player.EMPTY;
+                return false;
+            }
+            drawWall(inCol, inRow, gameState.activePlayer, Direction.VERTICAL);
+        }
+        console.log("Successfully added " + inDirection + " wall at: "+inRow+","+inCol);
+
+        updateGame();
+        return true;
+    }
+}
 
 function isNextToWallOrBorder (inCol, inRow, inUDLR) {
-    //console.log("Checking: " + inRow + ", " + inCol);
+    if (gameState.activePlayer == Player.EMPTY) throw Error("Player cannot be EMPTY");
+
     var horizontalWalls = gameState.horizontalWalls;
     var verticalWalls = gameState.verticalWalls;
 
@@ -41,6 +103,7 @@ function isNextToWallOrBorder (inCol, inRow, inUDLR) {
 }
 
 function updateValidMovements () {
+    if (gameState.activePlayer === Player.EMPTY) throw Error("Player cannot be EMPTY");
     var validMovements = [];
     var activeX, activeY, inactiveX, inactiveY;
     if (gameState.activePlayer === Player.RED)
@@ -129,4 +192,74 @@ function updateValidMovements () {
 
     if (gameState.activePlayer === Player.RED) gameState.validMovementsRed = validMovements;
     else gameState.validMovementsBlu = validMovements;
+}
+
+var wasHere = [];
+
+function isSolvable() {
+    wasHere.length = COLS;
+    for (var col = 0; col < COLS; col++)
+    {
+        var temporaryArrayForHorizontal = [];
+        temporaryArrayForHorizontal.length = ROWS;
+        for (var row = 0; row < ROWS; row++)
+        {
+            temporaryArrayForHorizontal[row] = false;
+        }
+        wasHere[col] = temporaryArrayForHorizontal;
+    }
+
+    var bluPossible = true;
+    var redPossible = recursiveSolve(gameState.redX, gameState.redY, Player.RED);
+    if (redPossible)
+    {
+        for (var col = 0; col < COLS; col++){
+            for (var row = 0; row < ROWS; row++){
+                wasHere[col][row] = false;
+            }
+        }
+        bluPossible = recursiveSolve(gameState.bluX, gameState.bluY, Player.BLU);
+    }
+    console.log("Is Red/Blu possible? "+redPossible+"/"+bluPossible);
+    return redPossible && bluPossible;
+}
+
+function recursiveSolve (inX, inY) {
+    if (gameState.activePlayer == Player.EMPTY) throw new AssertionError();
+
+    // Teriminating Conditions
+    if (gameState.activePlayer == Player.RED && inY == 0) return true;
+    else if (gameState.activePlayer == Player.BLU && inY == ROWS-1) return true;
+    wasHere[inX][inY] = true;
+
+    // Check if can go up
+    var canGoUp = !isNextToWallOrBorder(inX, inY, UDLR.UP) && !wasHere[inX][inY-1];
+    var canGoDown = !isNextToWallOrBorder(inX, inY, UDLR.DOWN) && !wasHere[inX][inY+1];
+    var canGoLeft = !isNextToWallOrBorder(inX, inY, UDLR.LEFT) && !wasHere[inX-1][inY];
+    var canGoRight = !isNextToWallOrBorder(inX, inY, UDLR.RIGHT) && !wasHere[inX+1][inY];
+
+    if (canGoUp)
+    {
+        //console.log("From: " +inX+", "+inY+". We can go up, going.");
+        if (recursiveSolve(inX, inY-1, gameState.activePlayer)) return true;
+    }
+    //else console.log("From: " +inX+", "+inY+". We can't go up.");
+    if (canGoDown){
+        //console.log("From: " +inX+", "+inY+". We can go down, going.");
+        if (recursiveSolve(inX, inY+1, gameState.activePlayer)) return true;
+    }
+    //else console.log("From: " +inX+", "+inY+". We can't go down.");
+    if (canGoLeft)
+    {
+        //console.log("From: " +inX+", "+inY+". We can go left, going.");
+        if (recursiveSolve(inX-1, inY, gameState.activePlayer)) return true;
+    }
+    //else console.log("From: " +inX+", "+inY+". We can't go left.");
+    if (canGoRight)
+    {
+        //console.log("From: " +inX+", "+inY+". We can go right, going.");
+        if (recursiveSolve(inX+1, inY, gameState.activePlayer)) return true;
+    }
+    //else console.log("From: " +inX+", "+inY+". We can't go right.");
+    return false;
 }

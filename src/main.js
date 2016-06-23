@@ -41,12 +41,14 @@ context.fillStyle = "black";
 context.fill();
 //var botNotation = document.getElementById('bot-notation');
 */
+/*
 var canvasGrid = document.getElementById('quoridor-grid');
 canvasGrid.width = CANVAS_WIDTH;
 canvasGrid.height = CANVAS_HEIGHT;
-var contextGrid = canvasGrid.getContext('2d');
+var context = canvasGrid.getContext('2d');
+*/
 
-var canvas = document.getElementById('quoridor-pieces');
+var canvas = document.getElementById('quoridor-board');
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 var context = canvas.getContext('2d');
@@ -139,54 +141,56 @@ function clickAt (inMousePosition) {
 
         if (remainderY <= WALL_PADDING)
         {
-            if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.HORIZONTAL, currentPlayer);
-            else addWall(colSelected, rowSelected-1, Direction.HORIZONTAL, currentPlayer);
+            if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.HORIZONTAL, gameState.activePlayer);
+            else addWall(colSelected, rowSelected-1, Direction.HORIZONTAL, gameState.activePlayer);
         }
         else if (remainderY >= CELL_SIZE - WALL_PADDING)
         {
-            if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected, Direction.HORIZONTAL, currentPlayer);
-            else addWall(colSelected, rowSelected, Direction.HORIZONTAL, currentPlayer);
+            if (remainderX <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected, Direction.HORIZONTAL, gameState.activePlayer);
+            else addWall(colSelected, rowSelected, Direction.HORIZONTAL, gameState.activePlayer);
         }
         // Check that you're clicking on a vertical wall
         else if (remainderX <= WALL_PADDING)
         {
-            if (remainderY <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.VERTICAL, currentPlayer);
-            else addWall(colSelected-1, rowSelected, Direction.VERTICAL, currentPlayer);
+            if (remainderY <= CELL_SIZE / 2) addWall(colSelected-1, rowSelected-1, Direction.VERTICAL, gameState.activePlayer);
+            else addWall(colSelected-1, rowSelected, Direction.VERTICAL, gameState.activePlayer);
         }
         else if (remainderX >= CELL_SIZE - WALL_PADDING)
         {
-            if (remainderY <= CELL_SIZE / 2) addWall(colSelected, rowSelected-1, Direction.VERTICAL, currentPlayer);
-            else addWall(colSelected, rowSelected, Direction.VERTICAL, currentPlayer);
+            if (remainderY <= CELL_SIZE / 2) addWall(colSelected, rowSelected-1, Direction.VERTICAL, gameState.activePlayer);
+            else addWall(colSelected, rowSelected, Direction.VERTICAL, gameState.activePlayer);
         }
 
-        // Piece movement
-        var validMovements;
-        if (gameState.activePlayer === Player.RED) validMovements = gameState.validMovementsRed;
-        else validMovements = gameState.validMovementsBlu; // Assume activePlayer !== Player.EMPTY
-        for (var i = 0; i < validMovements.length; i++) {
-            if (colSelected === validMovements[i][0] && rowSelected === validMovements[i][1]) {
-                if (gameState.activePlayer === Player.RED) {
-                    // Clear old player token
-                    clearPlayingArea(gameState.redX, gameState.redY);
+        else {
+            // Piece movement
+            var validMovements;
+            if (gameState.activePlayer === Player.RED) validMovements = gameState.validMovementsRed;
+            else validMovements = gameState.validMovementsBlu; // Assume activePlayer !== Player.EMPTY
+            for (var i = 0; i < validMovements.length; i++) {
+                if (colSelected === validMovements[i][0] && rowSelected === validMovements[i][1]) {
+                    if (gameState.activePlayer === Player.RED) {
+                        // Clear old player token
+                        clearPlayingArea(gameState.redX, gameState.redY);
 
-                    // Update coordinates for new player token
-                    gameState.redX = colSelected;
-                    gameState.redY = rowSelected;
+                        // Update coordinates for new player token
+                        gameState.redX = colSelected;
+                        gameState.redY = rowSelected;
 
-                    // Paint new player token
-                    drawO(gameState.redX, gameState.redY, Player.RED);
+                        // Paint new player token
+                        drawO(gameState.redX, gameState.redY, Player.RED);
+                    }
+                    else // Assume activePlayer !== Player.EMPTY
+                    {
+                        clearPlayingArea(gameState.bluX, gameState.bluY);
+
+                        gameState.bluX = colSelected;
+                        gameState.bluY = rowSelected;
+
+                        drawO(gameState.bluX, gameState.bluY, Player.BLU);
+                    }
+
+                    updateGame();
                 }
-                else // Assume activePlayer !== Player.EMPTY
-                {
-                    clearPlayingArea(gameState.bluX, gameState.bluY);
-
-                    gameState.bluX = colSelected;
-                    gameState.bluY = rowSelected;
-
-                    drawO(gameState.bluX, gameState.bluY, Player.BLU);
-                }
-
-                updateGame();
             }
         }
     }
@@ -257,21 +261,6 @@ function drawWall (inX, inY, inActivePlayer, inDirection) {
 
 initGameState();
 drawGridLines();
-drawWall(3,7,Player.RED,Direction.HORIZONTAL);
-drawWall(3,7,Player.BLU,Direction.VERTICAL);
-gameState.horizontalWalls[3][7] = true;
-
-console.log(gameState.validMovementsRed);
-gameState.verticalWalls[3][7] = true;
-updateValidMovements();
-console.log(gameState.validMovementsRed);
-/*
-context.clearRect(
-    0,
-    0,
-    CANVAS_WIDTH,
-    CANVAS_HEIGHT
-);*/
 
 function getCanvasMousePosition (event) {
     var rect = canvas.getBoundingClientRect();
