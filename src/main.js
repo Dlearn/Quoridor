@@ -68,8 +68,11 @@ canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 var context = canvas.getContext('2d');
 
+// These 2 lines start the game.
 var gameState = [];
+initGameState();
 
+// The important functions are all below
 function initGameState() {
     // Player positions
     var redX = 4, redY = ROWS-1;
@@ -116,9 +119,7 @@ function initGameState() {
         currentStatus : currentStatus,
         activePlayer : activePlayer
     };
-
-    drawO(redX,redY,Player.RED);
-    drawO(bluX,bluY,Player.BLU);
+    redrawAll();
 }
 function drawGridLines () {
     var lineStart = 0;
@@ -235,15 +236,9 @@ function updateGame() {
 
     // Update valid movements
     updateValidMovements();
+    redrawAll();
 }
-function clearPlayingArea (inX, inY) {
-    context.clearRect(
-        inX * CELL_SIZE + GRIDLINE_WIDTH,
-        inY * CELL_SIZE + GRIDLINE_WIDTH,
-        CELL_SIZE - 2 * GRIDLINE_WIDTH,
-        CELL_SIZE - 2 * GRIDLINE_WIDTH
-    );
-}
+function clearAll (inX, inY) {context.clearRect(0 ,0, CANVAS_WIDTH, CANVAS_HEIGHT);}
 function drawO (inX, inY, inActivePlayer) {
     var halfSectionSize = CELL_SIZE / 2;
     var centerX = inX * CELL_SIZE + halfSectionSize;
@@ -260,10 +255,16 @@ function drawO (inX, inY, inActivePlayer) {
     context.strokeStyle = "black";
     context.stroke();
 }
-function drawWall (inX, inY, inActivePlayer, inDirection) {
+function drawWall (inX, inY, inPlayer, inDirection) {
+    //Hack to clamp the wall addition
+    if (inX == -1) inX = 0;
+    else if (inX == COLS-1) inX = COLS-2;
+    if (inY == -1) inY = 0;
+    else if (inY == ROWS-1) inY = ROWS-2;
+
     context.lineWidth = WALL_STROKE_WIDTH;
-    if (inActivePlayer === Player.RED) context.strokeStyle = "red";
-    else if (inActivePlayer === Player.BLU) context.strokeStyle = "blue";
+    if (inPlayer === Player.RED) context.strokeStyle = "red";
+    else if (inPlayer === Player.BLU) context.strokeStyle = "blue";
     context.lineCap = 'butt';
     context.beginPath();
 
@@ -286,9 +287,73 @@ function drawWall (inX, inY, inActivePlayer, inDirection) {
     }
     context.stroke();
 }
+function redrawAll () {
+    clearAll();
+    drawGridLines();
+    drawO(gameState.redX, gameState.redY, Player.RED);
+    drawO(gameState.bluX, gameState.bluY, Player.BLU);
 
-drawGridLines();
-initGameState();
+    for (var col=0; col<COLS-1; col++) {
+        for (var row=0; row<ROWS-1; row++) {
+            if (gameState.horizontalWalls[col][row] == Player.RED) drawWall(col,row,Player.RED,Direction.HORIZONTAL);
+            else if (gameState.horizontalWalls[col][row] == Player.BLU) drawWall(col,row,Player.BLU,Direction.HORIZONTAL);
+            else if (gameState.verticalWalls[col][row] == Player.RED) drawWall(col,row,Player.RED,Direction.VERTICAL);
+            else if (gameState.verticalWalls[col][row] == Player.BLU) drawWall(col,row,Player.BLU,Direction.VERTICAL);
+        }
+    }
+}
+
+function hoverAt(inMousePosition) {
+    clearAll();
+    redrawAll();
+
+    var colSelected = Math.floor(inMousePosition.x / CELL_SIZE);
+    var rowSelected = Math.floor(inMousePosition.y / CELL_SIZE);
+
+    var remainderX = inMousePosition.x % CELL_SIZE;
+    var remainderY = inMousePosition.y % CELL_SIZE;
+
+    if (remainderY <= WALL_PADDING)
+    {
+        if (remainderX <= CELL_SIZE / 2) drawWall(colSelected-1, rowSelected-1, gameState.activePlayer, Direction.HORIZONTAL);
+        else drawWall(colSelected, rowSelected-1, gameState.activePlayer, Direction.HORIZONTAL);
+    }
+    else if (remainderY >= CELL_SIZE - WALL_PADDING)
+    {
+        if (remainderX <= CELL_SIZE / 2) drawWall(colSelected-1, rowSelected, gameState.activePlayer, Direction.HORIZONTAL);
+        else drawWall(colSelected, rowSelected, gameState.activePlayer, Direction.HORIZONTAL);
+    }
+    // Check that you're clicking on a vertical wall
+    else if (remainderX <= WALL_PADDING)
+    {
+        if (remainderY <= CELL_SIZE / 2) drawWall(colSelected-1, rowSelected-1, gameState.activePlayer, Direction.VERTICAL);
+        else drawWall(colSelected-1, rowSelected, gameState.activePlayer, Direction.VERTICAL);
+    }
+    else if (remainderX >= CELL_SIZE - WALL_PADDING)
+    {
+        if (remainderY <= CELL_SIZE / 2) drawWall(colSelected, rowSelected-1, gameState.activePlayer, Direction.VERTICAL);
+        else drawWall(colSelected, rowSelected, gameState.activePlayer, Direction.VERTICAL);
+    }
+
+    // Piece prediction
+    var validMovements;
+    if (gameState.activePlayer === Player.RED) validMovements = gameState.validMovementsRed;
+    else validMovements = gameState.validMovementsBlu; // Assume activePlayer !== Player.EMPTY
+    for (var i = 0; i < validMovements.length; i++) {
+        if (colSelected === validMovements[i][0] && rowSelected === validMovements[i][1]) {
+            if (gameState.activePlayer === Player.RED) {
+                // Paint new player token
+                drawO(colSelected, rowSelected, Player.RED);
+            }
+            else // Assume activePlayer !== Player.EMPTY
+            {
+                drawO(gameState.bluX, gameState.bluY, Player.BLU);
+            }
+        }
+    }
+}
+
+
 
 function getCanvasMousePosition (event) {
     var rect = canvas.getBoundingClientRect();
@@ -299,13 +364,11 @@ function getCanvasMousePosition (event) {
     }
 }
 
-/*
 // Mouse hover methods
 canvas.addEventListener('mousemove', function(event) {
     var mousePosition = getCanvasMousePosition(event);
-    console.log(mousePosition.x + ", " + mousePosition.y)
+    hoverAt(mousePosition);
 });
-*/
 
 canvas.addEventListener('click', function (event) {
     var mousePosition = getCanvasMousePosition(event);

@@ -46,7 +46,6 @@ function addWall(inCol, inRow, inDirection) {
                 gameState.horizontalWalls[inCol][inRow] = Player.EMPTY;
                 return false;
             }
-            drawWall(inCol, inRow, gameState.activePlayer, Direction.HORIZONTAL);
         } else // inDirection == Direction.VERTICAL
         {
             gameState.verticalWalls[inCol][inRow] = gameState.activePlayer;
@@ -56,7 +55,6 @@ function addWall(inCol, inRow, inDirection) {
                 gameState.verticalWalls[inCol][inRow] = Player.EMPTY;
                 return false;
             }
-            drawWall(inCol, inRow, gameState.activePlayer, Direction.VERTICAL);
         }
         //console.log("Successfully added " + inDirection + " wall at: "+inRow+","+inCol);
 
@@ -227,7 +225,7 @@ function isSolvable() {
 }
 
 function recursiveSolve (inX, inY) {
-    if (gameState.activePlayer == Player.EMPTY) throw new AssertionError();
+    if (gameState.activePlayer == Player.EMPTY) throw Error("Player cannot be EMPTY");
 
     // Teriminating Conditions
     if (gameState.activePlayer == Player.RED && inY == 0) return true;
