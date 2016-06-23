@@ -33,7 +33,7 @@ function addWall(inCol, inRow, inDirection) {
     }
 
     var clashes = clashesHorizontally || clashesVertically || clashesBack || clashesForward;
-    if (clashes) return false;
+    if (clashes) {changeGameText("WALL CLASH"); return false;}
     else
     {
         if (inDirection == Direction.HORIZONTAL)
@@ -58,7 +58,7 @@ function addWall(inCol, inRow, inDirection) {
             }
             drawWall(inCol, inRow, gameState.activePlayer, Direction.VERTICAL);
         }
-        console.log("Successfully added " + inDirection + " wall at: "+inRow+","+inCol);
+        //console.log("Successfully added " + inDirection + " wall at: "+inRow+","+inCol);
 
         updateGame();
         return true;
@@ -220,7 +220,9 @@ function isSolvable() {
         }
         bluPossible = recursiveSolve(gameState.bluX, gameState.bluY, Player.BLU);
     }
-    console.log("Is Red/Blu possible? "+redPossible+"/"+bluPossible);
+    if (!bluPossible) changeGameText("Invalid move. Blue cannot win.");
+    else if (!redPossible) changeGameText("INVALID MOVE. RED CANNOT WIN.");
+    //console.log("Is Red/Blu possible? "+redPossible+"/"+bluPossible);
     return redPossible && bluPossible;
 }
 

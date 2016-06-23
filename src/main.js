@@ -26,16 +26,18 @@ const WALL_PADDING = 4; // wall padding
 // Javascript implementation of Enums. Could possibly use http://www.2ality.com/2016/01/enumify.html
 const UDLR = { UP: 'UP', DOWN: 'DOWN', LEFT: 'LEFT', RIGHT: 'RIGHT' };
 const Direction = { VERTICAL: 'VERTICAL', HORIZONTAL: 'HORIZONTAL'};
-const Player = { RED: 'RED', BLU: 'BLU', EMPTY: 'EMPTY'};
+const Player = { RED: 'RED', BLU: 'BLUE', EMPTY: 'EMPTY'};
 const GameStatus = { PLAYING: 'PLAYING', RED_WON: 'RED_WON', BLU_WON: 'BLU_WON'};
 
 const NOTATION_PADDING = 35;
-var gameText = document.getElementById('game-text');
-gameText.width = NOTATION_PADDING + CANVAS_WIDTH;
-gameText.height = NOTATION_PADDING + 10;
-var gameTextContext = gameText.getContext('2d');
-gameTextContext.font = "22px Palatino";
-gameTextContext.fillText("WELCOME TO QUORIDOR!", 55, 25);
+const TEXT_OFFSET_X = 55, TEXT_OFFSET_Y = 25;
+
+var titleText = document.getElementById('title-text');
+titleText.width = NOTATION_PADDING + CANVAS_WIDTH;
+titleText.height = NOTATION_PADDING * 1.5;
+var titleTextContext = titleText.getContext('2d');
+titleTextContext.font = "26px Futura";
+titleTextContext.fillText("QUORIDOR", 190, TEXT_OFFSET_Y);
 
 var leftNotation = document.getElementById('left-notation');
 leftNotation.width = NOTATION_PADDING;
@@ -49,6 +51,17 @@ botNotation.height = NOTATION_PADDING;
 var botContext = botNotation.getContext('2d');
 botContext.font = "26px Arial";
 for (var i=0; i < ROWS; i++) botContext.fillText(String.fromCharCode(65+i), 55+i*CELL_SIZE, 25);
+
+var gameText = document.getElementById('game-text');
+gameText.width = NOTATION_PADDING + CANVAS_WIDTH;
+gameText.height = NOTATION_PADDING + 10;
+var gameTextContext = gameText.getContext('2d');
+gameTextContext.font = "22px Helvetica";
+gameTextContext.fillText("RED'S TURN", TEXT_OFFSET_X, TEXT_OFFSET_Y);
+function changeGameText(inString) {
+    gameTextContext.clearRect(0, 0, NOTATION_PADDING + CANVAS_WIDTH, NOTATION_PADDING + 10);
+    gameTextContext.fillText(inString, TEXT_OFFSET_X, TEXT_OFFSET_Y);
+}
 
 var canvas = document.getElementById('quoridor-board');
 canvas.width = CANVAS_WIDTH;
@@ -217,6 +230,8 @@ function updateGame() {
     // Swap active player
     if (gameState.activePlayer === Player.RED) gameState.activePlayer = Player.BLU;
     else gameState.activePlayer = Player.RED;
+
+    changeGameText(gameState.activePlayer + "'S TURN");
 
     // Update valid movements
     updateValidMovements();
